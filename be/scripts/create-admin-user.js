@@ -15,7 +15,7 @@ async function createAdminUser() {
     const adminData = {
       id: uuidv4(),
       email: 'admin@example.com',
-      password: 'Admin@123',
+      password: 'Admin2003.',
       firstName: 'Admin',
       lastName: 'User',
       role: 'admin',
