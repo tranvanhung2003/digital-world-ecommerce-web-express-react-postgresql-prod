@@ -51,7 +51,7 @@ const startServer = async () => {
 
   // Xử lý uncaught exceptions
   process.on('uncaughtException', (err) => {
-    logger.error('UNCAUGHT EXCEPTION! 💥 Đang shutdown...');
+    logger.error('UNCAUGHT EXCEPTION! Đang shutdown...');
     logger.error(err.name, err.message);
     logger.error(err.stack);
     process.exit(1);
@@ -59,7 +59,7 @@ const startServer = async () => {
 
   // Xử lý unhandled promise rejections
   process.on('unhandledRejection', (err) => {
-    logger.error('UNHANDLED REJECTION! 💥 Đang shutdown...');
+    logger.error('UNHANDLED REJECTION! Đang shutdown...');
     logger.error(err.name, err.message);
     server.close(() => {
       process.exit(1);
@@ -68,9 +68,9 @@ const startServer = async () => {
 
   // Xử lý SIGTERM signal
   process.on('SIGTERM', () => {
-    logger.info('👋 SIGTERM RECEIVED. Đang shutdown một cách nhẹ nhàng');
+    logger.info('SIGTERM RECEIVED. Đang shutdown một cách nhẹ nhàng');
     server.close(() => {
-      logger.info('💥 Process terminated!');
+      logger.info('Process terminated!');
     });
   });
 };
