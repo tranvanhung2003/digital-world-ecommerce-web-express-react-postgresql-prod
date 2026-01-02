@@ -1,6 +1,6 @@
 /**
  * Product Helper Functions
- * Utilities for managing product stock and variants
+ * Các hàm tiện ích để quản lý tồn kho sản phầm và biến thể sản phẩm
  */
 
 const { ProductVariant } = require('../models');
@@ -14,7 +14,7 @@ const calculateTotalStock = (variants) => {
   if (!variants || variants.length === 0) return 0;
   return variants.reduce(
     (total, variant) => total + (variant.stockQuantity || 0),
-    0
+    0,
   );
 };
 
@@ -38,7 +38,7 @@ const updateProductTotalStock = async (productId, Product) => {
         stockQuantity: totalStock,
         inStock: totalStock > 0,
       },
-      { where: { id: productId } }
+      { where: { id: productId } },
     );
 
     return totalStock;
@@ -72,7 +72,7 @@ const validateVariantAttributes = (productAttributes, variantAttributes) => {
       // Kiểm tra nếu giá trị biến thể không nằm trong danh sách giá trị cho phép
       if (!productAttr.values.includes(variantValue)) {
         console.log(
-          `Giá trị biến thể không hợp lệ: ${variantValue} không nằm trong ${productAttr.values.join(', ')}`
+          `Giá trị biến thể không hợp lệ: ${variantValue} không nằm trong ${productAttr.values.join(', ')}`,
         );
         return false;
       }
@@ -116,7 +116,7 @@ const getVariantStock = (variants, selectedAttributes) => {
 
   const matchingVariant = variants.find((variant) => {
     return Object.entries(selectedAttributes).every(
-      ([key, value]) => variant.attributes[key] === value
+      ([key, value]) => variant.attributes[key] === value,
     );
   });
 
@@ -134,7 +134,7 @@ const findVariantByAttributes = (variants, selectedAttributes) => {
 
   return variants.find((variant) => {
     return Object.entries(selectedAttributes).every(
-      ([key, value]) => variant.attributes[key] === value
+      ([key, value]) => variant.attributes[key] === value,
     );
   });
 };

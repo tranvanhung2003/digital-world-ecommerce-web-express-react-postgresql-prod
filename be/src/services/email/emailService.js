@@ -1,3 +1,4 @@
+require('dotenv').config();
 const nodemailer = require('nodemailer');
 
 // Create transporter
@@ -101,7 +102,7 @@ const sendOrderConfirmationEmail = async (email, order) => {
         <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${item.price.toLocaleString('vi-VN')}đ</td>
         <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${item.subtotal.toLocaleString('vi-VN')}đ</td>
       </tr>
-    `
+    `,
     )
     .join('');
 
