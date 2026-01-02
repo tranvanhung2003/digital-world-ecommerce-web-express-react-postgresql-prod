@@ -15,20 +15,20 @@ const path = require('path');
 // Khởi tạo app
 const app = express();
 
-// // Trust reverse proxy headers when running behind Nginx/PM2
+// // Tin tưởng các header của reverse proxy khi chạy phía sau Nginx/PM2
 // if (process.env.NODE_ENV === 'production') {
 //   app.set('trust proxy', 1);
 // }
 
-// // Set security HTTP headers
-// // app.use(
-// //   helmet({
-// //     crossOriginResourcePolicy: { policy: 'cross-origin' },
-// //     crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
-// //   })
-// // );
+// // Set các header bảo mật HTTP
+// app.use(
+//   helmet({
+//     crossOriginResourcePolicy: { policy: 'cross-origin' },
+//     crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+//   }),
+// );
 
-// Enable CORS
+// Kích hoạt CORS
 const corsOptions = {
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -36,20 +36,21 @@ const corsOptions = {
   exposedHeaders: ['Set-Cookie'],
 };
 
-// Check if CORS origin is set to wildcard in env
+// Kiểm tra xem CORS origin có được đặt thành wildcard trong biến môi trường hay không
 if (process.env.CORS_ORIGIN === '*') {
   corsOptions.origin = '*';
 } else if (process.env.CORS_ORIGIN) {
-  // Parse comma-separated origins if provided
+  // Nếu được cung cấp, phân tích các origins phân tách bằng dấu phẩy
   const origins = process.env.CORS_ORIGIN.split(',').map((origin) =>
     origin.trim(),
   );
+
   corsOptions.origin = origins;
 } else {
-  // Use default based on environment
+  // Sử dụng các giá trị mặc định dựa trên môi trường chạy
   corsOptions.origin =
     process.env.NODE_ENV === 'production'
-      ? process.env.FRONTEND_URL || 'https://yourdomain.com'
+      ? process.env.FRONTEND_URL || 'https://tranvanhung2003.id.vn'
       : [
           'http://localhost:3000',
           'http://localhost:5173',
@@ -58,41 +59,44 @@ if (process.env.CORS_ORIGIN === '*') {
         ];
 }
 
+// Áp dụng middleware CORS với các tùy chọn đã cấu hình
 app.use(cors(corsOptions));
 
-// Handle preflight requests
+// Xử lý các request thăm dò
 app.options('*', cors());
 
-// // Development logging
+// // Ghi log các request trong môi trường development
 // if (process.env.NODE_ENV === 'development') {
 //   app.use(morgan('dev'));
 // }
 
-// // Limit requests from same IP (only in production)
+// // Giới hạn số lượng request từ cùng một địa chỉ IP (chỉ trong môi trường production)
 // if (process.env.NODE_ENV === 'production') {
 //   const limiter = rateLimit({
-//     max: 100, // limit each IP to 100 requests per windowMs
-//     windowMs: 15 * 60 * 1000, // 15 minutes
+//     max: 100, // giới hạn mỗi IP tối đa 100 request mỗi windowMs
+//     windowMs: 15 * 60 * 1000, // 15 phút
 //     message:
-//       'Quá nhiều yêu cầu từ địa chỉ IP này, vui lòng thử lại sau 15 phút!',
+//       'Quá nhiều request từ địa chỉ IP này, vui lòng thử lại sau 15 phút!',
 //   });
 //   app.use('/api', limiter);
 // }
 
-// Body parser, reading data from body into req.body
+// Body parser, đọc dữ liệu từ body vào req.body
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Cookie parser
 app.use(cookieParser());
 
-// // Data sanitization against XSS
-// app.use(xss()); // Commented out to allow HTML in news content
+// // Đã comment để cho phép HTML trong phần nội dung Tin tức
+// // Sanitize dữ liệu đầu vào để ngăn chặn các cuộc tấn công XSS
+// app.use(xss());
 
-// Compression middleware
+// Compression middleware để nén các response bodies
+// Điều này giúp giảm kích thước dữ liệu truyền qua mạng, cải thiện hiệu suất tải trang
 app.use(compression());
 
-// Serve uploaded files statically
+// Phục vụ các tệp đã tải lên một cách tĩnh từ thư mục 'uploads'
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API routes
@@ -105,7 +109,7 @@ app.get('/api-docs.json', (req, res) => {
   res.send(swaggerSpec);
 });
 
-// Handle 404 routes
+// Xử lý 404 routes
 app.use('*', (req, res) => {
   res.status(404).json({
     status: 'fail',
