@@ -49,7 +49,7 @@ Table Cart {
   id uuid [pk]
   userId uuid [ref: > User.id]
   sessionId string
-  status enum [default: 'active', note: '''
+  status enum [not null, default: 'active', note: '''
     active
     merged
     converted
@@ -64,7 +64,7 @@ Table CartItem {
   variantId uuid [ref: > ProductVariant.id]
   quantity int [not null, default: 1]
   price decimal(19,2) [not null]
-  warrantyPackageIds array(uuid) [default: `[]`]
+  warrantyPackageIds array(uuid) [not null, default: `[]`]
 }
 
 Table Category {
@@ -110,7 +110,7 @@ Table Image {
   ''']
   productId uuid [ref: > Product.id]
   userId uuid [ref: > User.id]
-  isActive boolean [default: true]
+  isActive boolean [not null, default: true]
 
   indexes {
     (productId, userId, category, isActive) [unique]
@@ -124,10 +124,10 @@ Table News {
   content string [not null]
   thumbnail string
   description string
-  category string [default: 'Tin tức']
-  viewCount int [default: 0]
+  category string [not null, default: 'Tin tức']
+  viewCount int [not null, default: 0]
   tags string
-  isPublished boolean [default: true]
+  isPublished boolean [not null, default: true]
   userId uuid [ref: > User.id]
 }
 
@@ -183,7 +183,7 @@ Table Order {
   subtotal decimal(19,2) [not null]
   tax decimal(19,2) [not null]
   shippingCost decimal(19,2) [not null]
-  discount decimal(19,2) [default: 0]
+  discount decimal(19,2) [not null, default: 0]
   total decimal(19,2) [not null]
   notes string
   trackingNumber string
@@ -202,7 +202,7 @@ Table OrderItem {
   quantity int [not null]
   subtotal decimal(19,2) [not null]
   image string
-  attributes jsonb [default: `{}`]
+  attributes jsonb [not null, default: `{}`]
 }
 
 Table Product {
@@ -213,54 +213,54 @@ Table Product {
   shortDescription string [not null]
   price decimal(12,2) [not null]
   compareAtPrice decimal(12,2)
-  images string [default: '[]']
+  images string [not null, default: '[]']
   thumbnail string
-  inStock boolean [default: true]
-  stockQuantity int [default: 0]
+  inStock boolean [not null, default: true]
+  stockQuantity int [not null, default: 0]
   sku string [unique]
-  status enum [default: 'active', note: '''
+  status enum [not null, default: 'active', note: '''
     active
     inactive
     draft
   ''']
-  featured boolean [default: false]
-  searchKeywords string [default: '[]']
+  featured boolean [not null, default: false]
+  searchKeywords string [not null, default: '[]']
   seoTitle string
   seoDescription string
-  seoKeywords string [default: '[]']
-  specifications string [default: '[]']
-  condition enum [default: 'new', note: '''
+  seoKeywords string [not null, default: '[]']
+  specifications string [not null, default: '[]']
+  condition enum [not null, default: 'new', note: '''
     new
     like-new
     used
     refurbished
   ''']
   baseName string
-  isVariantProduct boolean [default: false]
-  faqs string [default: '[]']
+  isVariantProduct boolean [not null, default: false]
+  faqs string [not null, default: '[]']
 }
 
 Table ProductAttribute {
   id uuid [pk]
   productId uuid [not null, ref: > Product.id]
   name string [not null]
-  type string [not null, default: 'custom', note: '''
+  type enum [not null, default: 'custom', note: '''
     color
     size
     material
     custom
   ''']
-  values jsonb [default: `[]`]
-  required boolean [default: false]
-  sortOrder int [default: 0]
+  values jsonb [not null, default: `[]`]
+  required boolean [not null, default: false]
+  sortOrder int [not null, default: 0]
 }
 
 Table ProductAttributeGroup {
   id uuid [pk]
   productId uuid [not null, ref: > Product.id]
   attributeGroupId uuid [not null, ref: > AttributeGroup.id]
-  isRequired boolean [default: false]
-  sortOrder int [default: 0]
+  isRequired boolean [not null, default: false]
+  sortOrder int [not null, default: 0]
 }
 
 Table ProductCategory {
@@ -278,8 +278,8 @@ Table ProductSpecification {
   productId uuid [not null, ref: > Product.id]
   name string [not null]
   value string [not null]
-  category string [default: 'General']
-  sortOrder int [default: 0]
+  category string [not null, default: 'General']
+  sortOrder int [not null, default: 0]
 }
 
 Table ProductVariant {
@@ -290,21 +290,21 @@ Table ProductVariant {
   attributes jsonb [not null, default: `{}`]
   attributeValues jsonb [not null, default: `{}`]
   price decimal(12,2) [not null]
-  stockQuantity int [default: 0]
-  images array(string) [default: `[]`]
+  stockQuantity int [not null, default: 0]
+  images array(string) [not null, default: `[]`]
   displayName string
-  sortOrder int [default: 0]
-  isDefault boolean [default: false]
-  isAvailable boolean [default: true]
+  sortOrder int [not null, default: 0]
+  isDefault boolean [not null, default: false]
+  isAvailable boolean [not null, default: true]
   compareAtPrice decimal(12,2)
-  specifications jsonb [default: `{}`]
+  specifications jsonb [not null, default: `{}`]
 }
 
 Table ProductWarranty {
   id uuid [pk]
   productId uuid [not null, ref: > Product.id]
   warrantyPackageId uuid [not null, ref: > WarrantyPackage.id]
-  isDefault boolean [default: false]
+  isDefault boolean [not null, default: false]
 }
 
 Table Review {
@@ -314,10 +314,10 @@ Table Review {
   rating int [not null]
   title string
   content string [not null]
-  isVerified boolean [default: false]
-  likes int [default: 0]
-  dislikes int [default: 0]
-  images array(string) [default: `[]`]
+  isVerified boolean [not null, default: false]
+  likes int [not null, default: 0]
+  dislikes int [not null, default: 0]
+  images array(string) [not null, default: `[]`]
 }
 
 Table ReviewFeedback {
@@ -339,13 +339,13 @@ Table User {
   lastName string [not null]
   phone string
   avatar string
-  role string [default: 'customer', note: '''
+  role enum [not null, default: 'customer', note: '''
     customer
     admin
     manager
   ''']
-  isEmailVerified boolean [default: false]
-  isActive boolean [default: true]
+  isEmailVerified boolean [not null, default: false]
+  isActive boolean [not null, default: true]
   verificationToken string
   resetPasswordToken string
   resetPasswordExpires datetime
@@ -358,10 +358,10 @@ Table WarrantyPackage {
   description string
   durationMonths int [not null]
   price decimal(12,2) [not null, default: 0]
-  terms jsonb [default: `{}`]
-  coverage array(string) [default: `[]`]
-  isActive boolean [default: true]
-  sortOrder int [default: 0]
+  terms jsonb [not null, default: `{}`]
+  coverage array(string) [not null, default: `[]`]
+  isActive boolean [not null, default: true]
+  sortOrder int [not null, default: 0]
 }
 
 Table Wishlist {
