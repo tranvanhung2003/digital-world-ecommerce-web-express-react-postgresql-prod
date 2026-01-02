@@ -1,9 +1,11 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-// Create transporter
+/**
+ * Hàm tạo transporter email
+ */
 const createTransporter = () => {
-  // For development, use a test account
+  // Khi chạy ở môi trường development, sử dụng tài khoản thử nghiệm
   if (process.env.NODE_ENV === 'development') {
     return nodemailer.createTransport({
       host: process.env.EMAIL_HOST || 'smtp.ethereal.email',
@@ -16,7 +18,7 @@ const createTransporter = () => {
     });
   }
 
-  // For production, use configured email service
+  // Khi chạy ở môi trường production, sử dụng dịch vụ email đã cấu hình
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT,
@@ -28,7 +30,9 @@ const createTransporter = () => {
   });
 };
 
-// Send email
+/**
+ * Hàm gửi email
+ */
 const sendEmail = async (options) => {
   const transporter = createTransporter();
 
@@ -42,8 +46,11 @@ const sendEmail = async (options) => {
   await transporter.sendMail(mailOptions);
 };
 
-// Send verification email
+/**
+ * Hàm gửi email xác thực tài khoản
+ */
 const sendVerificationEmail = async (email, token) => {
+  // Tạo URL xác thực tài khoản
   const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${token}`;
 
   await sendEmail({
@@ -65,8 +72,11 @@ const sendVerificationEmail = async (email, token) => {
   });
 };
 
-// Send reset password email
+/**
+ * Hàm gửi email đặt lại mật khẩu
+ */
 const sendResetPasswordEmail = async (email, token) => {
+  // Tạo URL đặt lại mật khẩu
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
   await sendEmail({
@@ -88,11 +98,13 @@ const sendResetPasswordEmail = async (email, token) => {
   });
 };
 
-// Send order confirmation email
+/**
+ * Hàm gửi email xác nhận đơn hàng
+ */
 const sendOrderConfirmationEmail = async (email, order) => {
   const { orderNumber, orderDate, total, items, shippingAddress } = order;
 
-  // Format items HTML
+  // Định dạng các item HTML
   const itemsHtml = items
     .map(
       (item) => `
@@ -157,11 +169,13 @@ const sendOrderConfirmationEmail = async (email, order) => {
   });
 };
 
-// Send order status update email
+/**
+ * Hàm gửi email cập nhật trạng thái đơn hàng
+ */
 const sendOrderStatusUpdateEmail = async (email, order) => {
   const { orderNumber, orderDate, status } = order;
 
-  // Map status to Vietnamese
+  // Map các trạng thái sang tiếng Việt
   const statusMap = {
     pending: 'Chờ xử lý',
     processing: 'Đang xử lý',
@@ -194,7 +208,9 @@ const sendOrderStatusUpdateEmail = async (email, order) => {
   });
 };
 
-// Send order cancellation email
+/**
+ * Hàm gửi email hủy đơn hàng
+ */
 const sendOrderCancellationEmail = async (email, order) => {
   const { orderNumber, orderDate } = order;
 

@@ -16,7 +16,7 @@ const sequelize = new Sequelize(
     define: dbConfig.define,
     dialectOptions: dbConfig.dialectOptions,
     pool: dbConfig.pool,
-  }
+  },
 );
 
 module.exports = sequelize;
