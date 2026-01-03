@@ -71,6 +71,7 @@ npm start
 
 - `GET /api/admin/dashboard` - Thống kê tổng quan
 - `GET /api/admin/stats` - Thống kê chi tiết theo khoản thời gian
+- `GET /api/admin/users` - Lấy danh sách user
 
 ### Auth
 

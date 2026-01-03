@@ -200,7 +200,7 @@ const getDetailedStats = catchAsync(async (req, res) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  // Format theo groupBy cho Postgresql (TO_CHAR)
+  // Format theo groupBy cho Postgresql
   let dateFormat;
   switch (groupBy) {
     case 'hour':
@@ -240,7 +240,7 @@ const getDetailedStats = catchAsync(async (req, res) => {
     ],
   });
 
-  // Thống kê user mới theo thời gian
+  // Thống kê user mới theo khoảng thời gian (từ startDate đến endDate)
   const userStats = await User.findAll({
     attributes: [
       [
