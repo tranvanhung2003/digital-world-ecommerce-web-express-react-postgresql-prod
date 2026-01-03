@@ -116,7 +116,7 @@ class GeminiChatbotService {
       .join('\n');
 
     return `
-Bạn là một trợ lý AI thông minh cho cửa hàng thời trang Shopmini. Bạn có thể xử lý mọi loại câu hỏi:
+Bạn là một trợ lý AI thông minh cho cửa hàng thời trang DigitalWorld. Bạn có thể xử lý mọi loại câu hỏi:
 
 KHẢ NĂNG CỦA BẠN:
 1. Tìm kiếm và gợi ý sản phẩm
@@ -131,7 +131,7 @@ DANH SÁCH SẢN PHẨM CÓ SẴN:
 ${productList}
 
 THÔNG TIN CỬA HÀNG:
-- Tên: Shopmini - Cửa hàng thời trang trực tuyến
+- Tên: DigitalWorld - Cửa hàng thời trang trực tuyến
 - Chuyên: Áo thun, giày thể thao, balo, túi xách
 - Chính sách: Đổi trả trong 7 ngày, miễn phí vận chuyển đơn >500k
 - Thanh toán: COD, chuyển khoản, thẻ tín dụng
@@ -456,7 +456,7 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '💰 Shopmini có sản phẩm đa dạng từ 400k-5M! Bạn muốn tìm trong tầm giá nào? Tôi sẽ gợi ý sản phẩm phù hợp nhất!',
+          '💰 DigitalWorld có sản phẩm đa dạng từ 400k-5M! Bạn muốn tìm trong tầm giá nào? Tôi sẽ gợi ý sản phẩm phù hợp nhất!',
         suggestions: [
           'Dưới 1 triệu 💸',
           'Từ 1-2 triệu 💳',
@@ -475,7 +475,7 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '📋 Chính sách Shopmini:\n• Đổi trả trong 7 ngày\n• Miễn phí ship đơn >500k\n• Bảo hành theo nhà sản xuất\n• Hỗ trợ 24/7\nBạn cần biết thêm gì không?',
+          '📋 Chính sách DigitalWorld:\n• Đổi trả trong 7 ngày\n• Miễn phí ship đơn >500k\n• Bảo hành theo nhà sản xuất\n• Hỗ trợ 24/7\nBạn cần biết thêm gì không?',
         suggestions: [
           'Cách đổi trả',
           'Phí vận chuyển',
@@ -532,7 +532,7 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '😔 Shopmini rất xin lỗi vì trải nghiệm không tốt! Chúng tôi luôn lắng nghe và cải thiện. Bạn có thể chia sẻ chi tiết để chúng tôi hỗ trợ tốt nhất không?',
+          '😔 DigitalWorld rất xin lỗi vì trải nghiệm không tốt! Chúng tôi luôn lắng nghe và cải thiện. Bạn có thể chia sẻ chi tiết để chúng tôi hỗ trợ tốt nhất không?',
         suggestions: [
           'Liên hệ hotline',
           'Chat với tư vấn viên',
@@ -550,7 +550,7 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '🌤️ Thời tiết hôm nay thế nào nhỉ? Dù nắng hay mưa thì outfit đẹp vẫn quan trọng! Shopmini có nhiều sản phẩm phù hợp mọi thời tiết đấy!',
+          '🌤️ Thời tiết hôm nay thế nào nhỉ? Dù nắng hay mưa thì outfit đẹp vẫn quan trọng! DigitalWorld có nhiều sản phẩm phù hợp mọi thời tiết đấy!',
         suggestions: [
           'Áo thun mát mẻ ☀️',
           'Giày chống nước 🌧️',
@@ -568,7 +568,7 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '🍕 Haha, tôi không bán đồ ăn nhưng có thể giúp bạn chọn outfit đẹp để đi ăn! Shopmini có nhiều trang phục thời trang cho mọi dịp đấy!',
+          '🍕 Haha, tôi không bán đồ ăn nhưng có thể giúp bạn chọn outfit đẹp để đi ăn! DigitalWorld có nhiều trang phục thời trang cho mọi dịp đấy!',
         suggestions: [
           'Áo đẹp đi chơi 👕',
           'Giày sneaker trendy 👟',
@@ -587,7 +587,7 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '🇻🇳 Quần đảo Hoàng Sa và Trường Sa là của Việt Nam! Chủ quyền lãnh thổ là điều thiêng liêng. Nhân tiện, Shopmini đang có nhiều mẫu áo thun in hình bản đồ Việt Nam cực đẹp đấy! Bạn có muốn xem không? 😊',
+          '🇻🇳 Quần đảo Hoàng Sa và Trường Sa là của Việt Nam! Chủ quyền lãnh thổ là điều thiêng liêng. Nhân tiện, DigitalWorld đang có nhiều mẫu áo thun in hình bản đồ Việt Nam cực đẹp đấy! Bạn có muốn xem không? 😊',
         suggestions: [
           'Xem áo thun in hình bản đồ Việt Nam',
           'Tìm sản phẩm khác',
@@ -607,7 +607,7 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '📚 Đây là một chủ đề thú vị! Tôi có thể trò chuyện về nhiều vấn đề, nhưng chuyên môn chính của tôi là tư vấn thời trang và sản phẩm của Shopmini. Bạn có muốn tìm hiểu về các sản phẩm đang hot không? 😊',
+          '📚 Đây là một chủ đề thú vị! Tôi có thể trò chuyện về nhiều vấn đề, nhưng chuyên môn chính của tôi là tư vấn thời trang và sản phẩm của DigitalWorld. Bạn có muốn tìm hiểu về các sản phẩm đang hot không? 😊',
         suggestions: [
           'Xem sản phẩm mới nhất',
           'Tìm sản phẩm theo phong cách',
@@ -626,7 +626,7 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          'Chào bạn! 👋 Rất vui được gặp bạn tại Shopmini! Tôi là trợ lý AI, sẵn sàng giúp bạn tìm những sản phẩm thời trang tuyệt vời. Bạn đang tìm gì vậy?',
+          'Chào bạn! 👋 Rất vui được gặp bạn tại DigitalWorld! Tôi là trợ lý AI, sẵn sàng giúp bạn tìm những sản phẩm thời trang tuyệt vời. Bạn đang tìm gì vậy?',
         suggestions: [
           'Sản phẩm hot nhất 🔥',
           'Khuyến mãi hôm nay 🎉',
@@ -640,7 +640,7 @@ LƯU Ý QUAN TRỌNG:
     // Default response
     return {
       response:
-        'Tôi là trợ lý AI của Shopmini! 😊 Tôi có thể giúp bạn:\n• Tìm sản phẩm phù hợp\n• Tư vấn giá cả, size\n• Hỗ trợ chính sách đổi trả\n• Trò chuyện về thời trang\n\nBạn cần hỗ trợ gì nhỉ?',
+        'Tôi là trợ lý AI của DigitalWorld! 😊 Tôi có thể giúp bạn:\n• Tìm sản phẩm phù hợp\n• Tư vấn giá cả, size\n• Hỗ trợ chính sách đổi trả\n• Trò chuyện về thời trang\n\nBạn cần hỗ trợ gì nhỉ?',
       suggestions: [
         'Tìm sản phẩm 🔍',
         'Xem khuyến mãi 🎁',

@@ -43,10 +43,10 @@ const SAMPLE_POSTS = [
     isPublished: true,
   },
   {
-    title: 'Khai trương cơ sở mới của ShopMini tại TP.HCM',
+    title: 'Khai trương cơ sở mới của DigitalWorld tại TP.HCM',
     slug: 'khai-truong-co-so-moi-tphcm',
     content:
-      '<p>ShopMini vui mừng thông báo khai trương cơ sở mới tại quận 1, TP.HCM với nhiều ưu đãi hấp dẫn như giảm giá 20% cho 100 khách hàng đầu tiên, quà tặng phụ kiện...</p>',
+      '<p>DigitalWorld vui mừng thông báo khai trương cơ sở mới tại quận 1, TP.HCM với nhiều ưu đãi hấp dẫn như giảm giá 20% cho 100 khách hàng đầu tiên, quà tặng phụ kiện...</p>',
     thumbnail:
       'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=800',
     description:
@@ -121,10 +121,10 @@ const SAMPLE_POSTS = [
     isPublished: true,
   },
   {
-    title: 'Dịch vụ vệ sinh laptop miễn phí tại ShopMini trong tháng 12',
+    title: 'Dịch vụ vệ sinh laptop miễn phí tại DigitalWorld trong tháng 12',
     slug: 've-sinh-laptop-mien-phi',
     content:
-      '<p>Trong tháng tri ân khách hàng, ShopMini triển khai chương trình vệ sinh máy miễn phí, tra keo tản nhiệt gấu cho tất cả dòng máy gaming và văn phòng...</p>',
+      '<p>Trong tháng tri ân khách hàng, DigitalWorld triển khai chương trình vệ sinh máy miễn phí, tra keo tản nhiệt gấu cho tất cả dòng máy gaming và văn phòng...</p>',
     thumbnail:
       'https://images.unsplash.com/photo-1588702547923-7093a6c3ba33?auto=format&fit=crop&q=80&w=800',
     description:

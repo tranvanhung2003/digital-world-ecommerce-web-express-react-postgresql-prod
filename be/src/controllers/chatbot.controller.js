@@ -79,7 +79,7 @@ class ChatbotController {
       // Generate AI response
       const aiResponse = await this.generateAIResponse(
         `Tìm sản phẩm: ${message}`,
-        { products, userProfile, searchParams }
+        { products, userProfile, searchParams },
       );
 
       // Create product recommendations
@@ -95,7 +95,7 @@ class ChatbotController {
           ? Math.round(
               ((product.compareAtPrice - product.price) /
                 product.compareAtPrice) *
-                100
+                100,
             )
           : 0,
       }));
@@ -134,12 +134,12 @@ class ChatbotController {
       const recommendations =
         await chatbotService.getPersonalizedRecommendations(
           userProfile?.id,
-          intent.params
+          intent.params,
         );
 
       const aiResponse = await this.generateAIResponse(
         `Gợi ý sản phẩm: ${message}`,
-        { recommendations, userProfile }
+        { recommendations, userProfile },
       );
 
       return {
@@ -211,7 +211,7 @@ class ChatbotController {
     try {
       const aiResponse = await this.generateAIResponse(
         `Hỗ trợ đơn hàng: ${message}`,
-        { userProfile }
+        { userProfile },
       );
 
       return {
@@ -236,7 +236,7 @@ class ChatbotController {
     try {
       const aiResponse = await this.generateAIResponse(
         `Hỗ trợ khách hàng: ${message}`,
-        { userProfile }
+        { userProfile },
       );
 
       return {
@@ -262,7 +262,7 @@ class ChatbotController {
       // Always try to steer conversation toward sales
       const salesOpportunity = await chatbotService.findSalesOpportunity(
         message,
-        userProfile
+        userProfile,
       );
 
       let response;
@@ -271,7 +271,7 @@ class ChatbotController {
           message,
           salesOpportunity.intent,
           userProfile,
-          context
+          context,
         );
       } else {
         const aiResponse = await this.generateAIResponse(message, {
@@ -480,7 +480,7 @@ class ChatbotController {
       searchTerms.forEach((term) => {
         searchConditions.push(
           { name: { [Op.iLike]: `%${term}%` } },
-          { description: { [Op.iLike]: `%${term}%` } }
+          { description: { [Op.iLike]: `%${term}%` } },
         );
       });
 
@@ -526,7 +526,7 @@ class ChatbotController {
         [
           // Order by discount percentage
           sequelize.literal(
-            '((compare_at_price - price) / compare_at_price) DESC'
+            '((compare_at_price - price) / compare_at_price) DESC',
           ),
         ],
       ],
@@ -557,7 +557,7 @@ class ChatbotController {
       const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
       const enhancedPrompt = `
-        Bạn là trợ lý bán hàng thông minh của Shopmini - một cửa hàng thời trang trực tuyến.
+        Bạn là trợ lý bán hàng thông minh của DigitalWorld - một cửa hàng thời trang trực tuyến.
         Mục tiêu chính của bạn là giúp khách hàng tìm và mua sản phẩm phù hợp.
         
         Ngữ cảnh: ${JSON.stringify(context)}
@@ -585,7 +585,7 @@ class ChatbotController {
   getTemplateResponse(prompt, context) {
     const templates = [
       'Tôi hiểu bạn đang tìm kiếm sản phẩm phù hợp! 😊 Để giúp bạn tốt nhất, hãy cho tôi biết thêm chi tiết về sở thích của bạn nhé.',
-      'Chào bạn! 👋 Shopmini có rất nhiều sản phẩm tuyệt vời. Bạn quan tâm đến loại sản phẩm nào nhất?',
+      'Chào bạn! 👋 DigitalWorld có rất nhiều sản phẩm tuyệt vời. Bạn quan tâm đến loại sản phẩm nào nhất?',
       'Cảm ơn bạn đã quan tâm! 🌟 Tôi sẽ giúp bạn tìm những sản phẩm tốt nhất với giá ưu đãi.',
     ];
     return templates[Math.floor(Math.random() * templates.length)];
@@ -610,7 +610,7 @@ class ChatbotController {
 
       // Simple response
       const response = {
-        response: `Chào bạn! Bạn vừa nói: "${message}". Tôi là trợ lý AI của Shopmini! 😊`,
+        response: `Chào bạn! Bạn vừa nói: "${message}". Tôi là trợ lý AI của DigitalWorld! 😊`,
         suggestions: [
           'Tìm sản phẩm hot 🔥',
           'Xem khuyến mãi 🎉',

@@ -17,11 +17,11 @@ const TermsPage: React.FC = () => {
       <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-8 mb-12">
         <div className="prose prose-lg dark:prose-invert max-w-none">
           <p>
-            Welcome to ShopMini. These terms and conditions outline the rules
-            and regulations for the use of our website. By accessing this
+            Welcome to DigitalWorld. These terms and conditions outline the
+            rules and regulations for the use of our website. By accessing this
             website, we assume you accept these terms and conditions in full. Do
-            not continue to use ShopMini if you do not accept all of the terms
-            and conditions stated on this page.
+            not continue to use DigitalWorld if you do not accept all of the
+            terms and conditions stated on this page.
           </p>
 
           <h2>1. Definitions</h2>
@@ -30,15 +30,15 @@ const TermsPage: React.FC = () => {
             Privacy Statement and Disclaimer Notice and any or all Agreements:
             "Client", "You" and "Your" refers to you, the person accessing this
             website and accepting the Company&apos;s terms and conditions. "The
-            Company", "Ourselves", "We", "Our" and "Us", refers to ShopMini.
+            Company", "Ourselves", "We", "Our" and "Us", refers to DigitalWorld.
             "Party", "Parties", or "Us", refers to both the Client and
             ourselves, or either the Client or ourselves.
           </p>
 
           <h2>2. License</h2>
           <p>
-            Unless otherwise stated, ShopMini and/or its licensors own the
-            intellectual property rights for all material on ShopMini. All
+            Unless otherwise stated, DigitalWorld and/or its licensors own the
+            intellectual property rights for all material on DigitalWorld. All
             intellectual property rights are reserved. You may view and/or print
             pages from the website for your own personal use subject to
             restrictions set in these terms and conditions.
@@ -49,8 +49,8 @@ const TermsPage: React.FC = () => {
             <li>Sell, rent or sub-license material from this website</li>
             <li>Reproduce, duplicate or copy material from this website</li>
             <li>
-              Redistribute content from ShopMini (unless content is specifically
-              made for redistribution)
+              Redistribute content from DigitalWorld (unless content is
+              specifically made for redistribution)
             </li>
           </ul>
 
@@ -84,8 +84,8 @@ const TermsPage: React.FC = () => {
             availability information. However, we do not warrant that product
             descriptions, pricing, or other content on this site is accurate,
             complete, reliable, current, or error-free. If a product offered by
-            ShopMini is not as described, your sole remedy is to return it in
-            unused condition.
+            DigitalWorld is not as described, your sole remedy is to return it
+            in unused condition.
           </p>
 
           <h2>6. Ordering and Payment</h2>
@@ -122,22 +122,23 @@ const TermsPage: React.FC = () => {
 
           <h2>9. Limitation of Liability</h2>
           <p>
-            In no event shall ShopMini, nor its directors, employees, partners,
-            agents, suppliers, or affiliates, be liable for any indirect,
-            incidental, special, consequential or punitive damages, including
-            without limitation, loss of profits, data, use, goodwill, or other
-            intangible losses, resulting from (i) your access to or use of or
-            inability to access or use the website; (ii) any conduct or content
-            of any third party on the website; (iii) any content obtained from
-            the website; and (iv) unauthorized access, use or alteration of your
-            transmissions or content, whether based on warranty, contract, tort
-            (including negligence) or any other legal theory, whether or not we
-            have been informed of the possibility of such damage.
+            In no event shall DigitalWorld, nor its directors, employees,
+            partners, agents, suppliers, or affiliates, be liable for any
+            indirect, incidental, special, consequential or punitive damages,
+            including without limitation, loss of profits, data, use, goodwill,
+            or other intangible losses, resulting from (i) your access to or use
+            of or inability to access or use the website; (ii) any conduct or
+            content of any third party on the website; (iii) any content
+            obtained from the website; and (iv) unauthorized access, use or
+            alteration of your transmissions or content, whether based on
+            warranty, contract, tort (including negligence) or any other legal
+            theory, whether or not we have been informed of the possibility of
+            such damage.
           </p>
 
           <h2>10. Indemnification</h2>
           <p>
-            You agree to indemnify, defend and hold harmless ShopMini, its
+            You agree to indemnify, defend and hold harmless DigitalWorld, its
             parent, subsidiaries, affiliates, partners, officers, directors,
             agents, contractors, licensors, service providers, subcontractors,
             suppliers, interns and employees, harmless from any claim or demand,

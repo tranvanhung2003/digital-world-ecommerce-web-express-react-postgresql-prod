@@ -7,9 +7,9 @@ const SAMPLE_NEWS = [
     title: 'Top 5 Laptop Gaming Đáng Mua Nhất Đầu Năm 2025',
     slug: 'top-5-laptop-gaming-2025',
     description:
-      'Khám phá những mẫu laptop gaming mạnh mẽ nhất, từ hiệu năng đỉnh cao đến thiết kế ấn tượng trong tầm giá cực tốt tại ShopMini.',
+      'Khám phá những mẫu laptop gaming mạnh mẽ nhất, từ hiệu năng đỉnh cao đến thiết kế ấn tượng trong tầm giá cực tốt tại DigitalWorld.',
     content: `
-      <p>Năm 2025 hứa hẹn là một năm bùng nổ của thị trường laptop gaming với sự ra mắt của nhiều dòng chip và card đồ họa thế hệ mới. Tại ShopMini, chúng tôi đã tổng hợp danh sách 5 mẫu laptop gaming đáng sở hữu nhất hiện nay dựa trên tiêu chí hiệu năng, tản nhiệt và mức giá.</p>
+      <p>Năm 2025 hứa hẹn là một năm bùng nổ của thị trường laptop gaming với sự ra mắt của nhiều dòng chip và card đồ họa thế hệ mới. Tại DigitalWorld, chúng tôi đã tổng hợp danh sách 5 mẫu laptop gaming đáng sở hữu nhất hiện nay dựa trên tiêu chí hiệu năng, tản nhiệt và mức giá.</p>
       
       <h2>1. MSI Raider GE78 HX (2025)</h2>
       <p>Với cấu hình Intel Core i9 Gen 14th và RTX 4090, đây là con quái vật hiệu năng dành cho những game thủ không chấp nhận sự thỏa hiệp. Màn hình 17.3 inch QHD+ 240Hz mang lại trải nghiệm hình ảnh tuyệt mỹ.</p>
@@ -26,7 +26,7 @@ const SAMPLE_NEWS = [
       <h2>5. Dell Alienware m16 R2</h2>
       <p>Thương hiệu gaming huyền thoại với thiết kế mới gọn gàng hơn nhưng vẫn giữ được "chất" Alienware. Hiệu năng ổn định và dịch vụ bảo hành tận tâm.</p>
       
-      <p>Hãy đến ngay các cửa hàng ShopMini tại Hà Nội và TP.HCM để trải nghiệm trực tiếp và nhận những phần quà hấp dẫn khi mua laptop gaming trong tháng này!</p>
+      <p>Hãy đến ngay các cửa hàng DigitalWorld tại Hà Nội và TP.HCM để trải nghiệm trực tiếp và nhận những phần quà hấp dẫn khi mua laptop gaming trong tháng này!</p>
     `,
     thumbnail:
       'https://images.unsplash.com/photo-1603302576837-37561b2e2302?q=80&w=2068&auto=format&fit=crop',
@@ -40,7 +40,7 @@ const SAMPLE_NEWS = [
     description:
       'Mẹo và thủ thuật giúp chiếc laptop của bạn chạy nhanh hơn, mượt mà hơn và giúp bạn tập trung cao độ vào công việc trên Windows 11.',
     content: `
-      <p>Windows 11 mang đến giao diện hiện đại, nhưng nếu không biết cách tùy chỉnh, nó có thể làm giảm hiệu suất làm việc của bạn. Dưới đây là những mẹo nhỏ nhưng cực kỳ hữu ích mà ShopMini tổng hợp dành cho bạn.</p>
+      <p>Windows 11 mang đến giao diện hiện đại, nhưng nếu không biết cách tùy chỉnh, nó có thể làm giảm hiệu suất làm việc của bạn. Dưới đây là những mẹo nhỏ nhưng cực kỳ hữu ích mà DigitalWorld tổng hợp dành cho bạn.</p>
       
       <h3>1. Tận dụng Snap Layouts</h3>
       <p>Sử dụng tổ hợp phím <code>Win + Z</code> để nhanh chóng sắp xếp các cửa sổ ứng dụng. Điều này giúp bạn làm việc đa nhiệm dễ dàng hơn rất nhiều trên các màn hình kích thước lớn.</p>
@@ -51,7 +51,7 @@ const SAMPLE_NEWS = [
       <h3>3. Sử dụng Virtual Desktops</h3>
       <p>Hãy phân chia không gian làm việc. Ví dụ: một màn hình ảo dành cho các tab nghiên cứu, một màn hình dành cho việc viết lách và một màn hình cho các ứng dụng giải trí.</p>
       
-      <p>Nếu bạn gặp bất kỳ vấn đề gì về phần mềm hoặc muốn nâng cấp RAM cho máy tính, đừng ngần ngại mang máy qua ShopMini để được hỗ trợ kỹ thuật miễn phí nhé!</p>
+      <p>Nếu bạn gặp bất kỳ vấn đề gì về phần mềm hoặc muốn nâng cấp RAM cho máy tính, đừng ngần ngại mang máy qua DigitalWorld để được hỗ trợ kỹ thuật miễn phí nhé!</p>
     `,
     thumbnail:
       'https://images.unsplash.com/photo-1587614382346-4ec70a388b28?q=80&w=2070&auto=format&fit=crop',
@@ -60,12 +60,12 @@ const SAMPLE_NEWS = [
     isPublished: true,
   },
   {
-    title: 'ShopMini Khai Trương Showroom Mới Tại Quận 1, TP.HCM',
+    title: 'DigitalWorld Khai Trương Showroom Mới Tại Quận 1, TP.HCM',
     slug: 'digitalworld-khai-truong-showroom-quan-1',
     description:
-      'Sự kiện khai trương showroom thứ 3 của ShopMini tại TP.HCM với hàng ngàn ưu đãi giảm giá lên đến 50% và quà tặng giá trị.',
+      'Sự kiện khai trương showroom thứ 3 của DigitalWorld tại TP.HCM với hàng ngàn ưu đãi giảm giá lên đến 50% và quà tặng giá trị.',
     content: `
-      <p>Chào đón thành viên mới trong gia đình ShopMini! Chúng tôi vô cùng hào hứng thông báo về việc khai trương Showroom tiếp theo tại địa chỉ sầm uất nhất TP.HCM.</p>
+      <p>Chào đón thành viên mới trong gia đình DigitalWorld! Chúng tôi vô cùng hào hứng thông báo về việc khai trương Showroom tiếp theo tại địa chỉ sầm uất nhất TP.HCM.</p>
       
       <p><b>Thời gian:</b> 08:00 AM - Chủ Nhật, Ngày 15/01/2025</p>
       <p><b>Địa chỉ:</b> Đường Nguyễn Huy Tưởng, Phường 6, Quận Bình Thạnh, TP.HCM</p>
@@ -94,9 +94,9 @@ const SAMPLE_NEWS = [
     content: `
       <p>Trí tuệ nhân tạo không còn là khái niệm của tương lai, nó đang hiện diện trong mọi ngõ ngách của công việc hiện đại. Từ ChatGPT đến Midjourney, AI đang trở thành trợ thủ đắc lực giúp nâng cao năng suất.</p>
       
-      <p>Tại ShopMini, chúng tôi luôn cập nhật những dòng máy tích hợp NPU (Neural Processing Unit) mạnh mẽ để hỗ trợ tối đa cho các tác vụ AI. Laptop giờ đây không chỉ là công cụ tính toán, mà còn là người cộng sự thông minh.</p>
+      <p>Tại DigitalWorld, chúng tôi luôn cập nhật những dòng máy tích hợp NPU (Neural Processing Unit) mạnh mẽ để hỗ trợ tối đa cho các tác vụ AI. Laptop giờ đây không chỉ là công cụ tính toán, mà còn là người cộng sự thông minh.</p>
       
-      <p>Liệu AI sẽ thay thế con người hay bổ trợ cho chúng ta? Câu trả lời nằm ở cách chúng ta làm chủ công cụ này. Hãy cùng ShopMini thảo luận về xu hướng này trong buổi Workshop sắp tới nhé.</p>
+      <p>Liệu AI sẽ thay thế con người hay bổ trợ cho chúng ta? Câu trả lời nằm ở cách chúng ta làm chủ công cụ này. Hãy cùng DigitalWorld thảo luận về xu hướng này trong buổi Workshop sắp tới nhé.</p>
     `,
     thumbnail:
       'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2070&auto=format&fit=crop',
@@ -114,7 +114,7 @@ const SAMPLE_NEWS = [
       
       <p>Màn hình với độ sáng lên tới 1000 nits khi hiển thị nội dung SDR giúp bạn làm việc ngoài trời dễ dàng hơn bao giờ hết. Camera 12MP Center Stage mang lại chất lượng cuộc gọi video sắc nét vượt bậc.</p>
       
-      <p>Sản phẩm hiện đã có hàng tại ShopMini với đầy đủ các phiên bản cấu hình và màu sắc. Đừng bỏ lỡ chương trình trả góp 0% lãi suất cùng nhiều ưu đãi hấp dẫn dành riêng cho học sinh, sinh viên.</p>
+      <p>Sản phẩm hiện đã có hàng tại DigitalWorld với đầy đủ các phiên bản cấu hình và màu sắc. Đừng bỏ lỡ chương trình trả góp 0% lãi suất cùng nhiều ưu đãi hấp dẫn dành riêng cho học sinh, sinh viên.</p>
     `,
     thumbnail:
       'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=2026&auto=format&fit=crop',

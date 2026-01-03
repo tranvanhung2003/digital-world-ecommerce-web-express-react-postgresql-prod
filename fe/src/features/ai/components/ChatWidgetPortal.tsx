@@ -25,7 +25,7 @@ const ChatWidgetPortal: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated, user } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
 
   // API mutation hook
@@ -33,7 +33,7 @@ const ChatWidgetPortal: React.FC = () => {
 
   // Tạo session ID cho chat
   const [sessionId] = useState<string>(
-    () => `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+    () => `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
   );
 
   // Hiển thị tin nhắn chào mừng khi mở chatbot
@@ -42,9 +42,9 @@ const ChatWidgetPortal: React.FC = () => {
       const greetingText =
         isAuthenticated && user
           ? t('chat.greetingWithName', { name: user.name }) ||
-            `Chào ${user.name}! Tôi là trợ lý AI của Shopmini! 😊 Tôi có thể giúp bạn tìm sản phẩm, xem khuyến mãi và hỗ trợ mua hàng. Bạn cần gì nhỉ?`
+            `Chào ${user.name}! Tôi là trợ lý AI của DigitalWorld! 😊 Tôi có thể giúp bạn tìm sản phẩm, xem khuyến mãi và hỗ trợ mua hàng. Bạn cần gì nhỉ?`
           : t('chat.greeting') ||
-            'Chào bạn! Tôi là trợ lý AI của Shopmini! 😊 Tôi có thể giúp bạn tìm sản phẩm, xem khuyến mãi và hỗ trợ mua hàng. Bạn cần gì nhỉ?';
+            'Chào bạn! Tôi là trợ lý AI của DigitalWorld! 😊 Tôi có thể giúp bạn tìm sản phẩm, xem khuyến mãi và hỗ trợ mua hàng. Bạn cần gì nhỉ?';
 
       const greeting = {
         id: Date.now().toString(),

@@ -15,14 +15,14 @@ const ChatWidgetSimple: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated, user } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
 
   // Hiển thị tin nhắn chào mừng khi mở chatbot
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const greetingText =
-        'Chào bạn! Tôi là trợ lý AI của Shopmini! 😊 Tôi có thể giúp bạn tìm sản phẩm, xem khuyến mãi và hỗ trợ mua hàng. Bạn cần gì nhỉ?';
+        'Chào bạn! Tôi là trợ lý AI của DigitalWorld! 😊 Tôi có thể giúp bạn tìm sản phẩm, xem khuyến mãi và hỗ trợ mua hàng. Bạn cần gì nhỉ?';
 
       const greeting = {
         id: Date.now().toString(),
@@ -415,7 +415,7 @@ const ChatWidgetSimple: React.FC = () => {
                 onSubmit={(e) => {
                   e.preventDefault();
                   const input = e.currentTarget.elements.namedItem(
-                    'message'
+                    'message',
                   ) as HTMLInputElement;
                   if (input.value.trim()) {
                     handleSendMessage(input.value);

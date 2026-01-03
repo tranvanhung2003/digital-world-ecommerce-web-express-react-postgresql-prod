@@ -17,7 +17,7 @@ const PrivacyPolicyPage: React.FC = () => {
       <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-8 mb-12">
         <div className="prose prose-lg dark:prose-invert max-w-none">
           <p>
-            At ShopMini, we take your privacy seriously. This Privacy Policy
+            At DigitalWorld, we take your privacy seriously. This Privacy Policy
             explains how we collect, use, disclose, and safeguard your
             information when you visit our website or make a purchase. Please
             read this privacy policy carefully. If you do not agree with the

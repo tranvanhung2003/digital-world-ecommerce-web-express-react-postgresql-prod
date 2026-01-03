@@ -7,7 +7,7 @@ const AboutPage: React.FC = () => {
       {/* Hero section */}
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-4">
-          About ShopMini
+          About DigitalWorld
         </h1>
         <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
           We&apos;re on a mission to provide high-quality products at affordable
@@ -22,10 +22,10 @@ const AboutPage: React.FC = () => {
             Our Story
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-4">
-            Founded in 2023, ShopMini started with a simple idea: make shopping
-            easier, more enjoyable, and accessible to everyone. What began as a
-            small online store has grown into a platform offering thousands of
-            products across multiple categories.
+            Founded in 2023, DigitalWorld started with a simple idea: make
+            shopping easier, more enjoyable, and accessible to everyone. What
+            began as a small online store has grown into a platform offering
+            thousands of products across multiple categories.
           </p>
           <p className="text-neutral-600 dark:text-neutral-400 mb-4">
             Our team is passionate about curating the best products and creating
@@ -194,7 +194,7 @@ const AboutPage: React.FC = () => {
         </h2>
         <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto mb-8">
           Explore our wide range of products and discover why thousands of
-          customers choose ShopMini for their shopping needs.
+          customers choose DigitalWorld for their shopping needs.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link

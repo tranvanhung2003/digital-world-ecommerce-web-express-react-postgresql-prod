@@ -94,7 +94,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           <span>
             {t('chat.poweredBy') || 'Powered by'}{' '}
             <span className="font-semibold text-primary-500 dark:text-primary-400">
-              Shopmini AI
+              DigitalWorld AI
             </span>
           </span>
         </div>
