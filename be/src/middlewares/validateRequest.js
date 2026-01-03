@@ -1,7 +1,9 @@
 const { validationResult } = require('express-validator');
 const { AppError } = require('./errorHandler');
 
-// Middleware to validate request body against a Joi schema
+/**
+ * Middleware để validate request body theo Joi schema
+ */
 const validateRequest = (schema) => {
   return (req, res, next) => {
     const { error } = schema.validate(req.body, {
@@ -34,12 +36,9 @@ const validateExpressValidator = (req, res, next) => {
     }));
 
     // Log chi tiết để debug
-    console.log(
-      '🔍 Validation Errors:',
-      JSON.stringify(formattedErrors, null, 2)
-    );
-    console.log('📝 Request Body:', JSON.stringify(req.body, null, 2));
-    console.log('🔗 Request Params:', JSON.stringify(req.params, null, 2));
+    console.log('Validation Errors:', JSON.stringify(formattedErrors, null, 2));
+    console.log('Request Body:', JSON.stringify(req.body, null, 2));
+    console.log('Request Params:', JSON.stringify(req.params, null, 2));
 
     return res.status(400).json({
       status: 'fail',

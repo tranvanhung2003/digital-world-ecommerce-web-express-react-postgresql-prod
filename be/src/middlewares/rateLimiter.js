@@ -1,26 +1,30 @@
 const rateLimit = require('express-rate-limit');
 
-// General API rate limiter
+/**
+ * General API giới hạn tốc độ request từ cùng một địa chỉ IP
+ */
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000, // 15 phút
+  max: 100, // Giới hạn mỗi IP tối đa 100 request mỗi windowMs
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: 'error',
-    message: 'Too many requests, please try again later.',
+    message: 'Quá nhiều request, vui lòng thử lại sau.',
   },
 });
 
-// Auth endpoints rate limiter (more strict)
+/**
+ * Giới hạn tốc độ request cho các endpoint xác thực như đăng nhập, đăng ký
+ */
 const authLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // limit each IP to 10 requests per windowMs
+  windowMs: 60 * 60 * 1000, // 1 tiếng
+  max: 10, // Giới hạn mỗi IP tối đa 10 request mỗi windowMs
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: 'error',
-    message: 'Too many login attempts, please try again later.',
+    message: 'Quá nhiều lần đăng nhập, vui lòng thử lại sau.',
   },
 });
 

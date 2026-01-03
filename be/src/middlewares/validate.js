@@ -1,6 +1,8 @@
 const { AppError } = require('./errorHandler');
 
-// Validation middleware
+/**
+ * Validation middleware sử dụng Joi schema
+ */
 const validate = (schema) => {
   return (req, res, next) => {
     const { error } = schema.validate(req.body, {
