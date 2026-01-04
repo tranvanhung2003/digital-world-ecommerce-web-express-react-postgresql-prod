@@ -112,6 +112,10 @@ export const useProductForm = ({
           // Warranty không bắt buộc
           isStepValid = true;
           break;
+        case 'faqs':
+          // FAQs không bắt buộc
+          isStepValid = true;
+          break;
         case 'seo':
           // SEO không bắt buộc
           isStepValid = true;
@@ -147,7 +151,7 @@ export const useProductForm = ({
 
     // Check if there are any validation errors
     const hasErrors = errors.some(
-      (error) => error.errors && error.errors.length > 0
+      (error) => error.errors && error.errors.length > 0,
     );
 
     // Form chỉ valid khi không có lỗi
@@ -237,7 +241,7 @@ export const useProductForm = ({
 
       // Check if there are any validation errors
       const hasErrors = errors.some(
-        (error) => error.errors && error.errors.length > 0
+        (error) => error.errors && error.errors.length > 0,
       );
 
       const isValid = isFieldsFilled && !hasErrors;
@@ -328,7 +332,7 @@ export const useProductForm = ({
     // Bỏ qua kiểm tra attributes và variants
 
     return missingFields.map(
-      (field) => fieldLabels[field as keyof typeof fieldLabels]
+      (field) => fieldLabels[field as keyof typeof fieldLabels],
     );
   };
 
@@ -375,7 +379,7 @@ export const useProductForm = ({
     if (missingFieldNames.length > 0) {
       // Hiển thị thông báo về các trường còn thiếu
       message.error(
-        `Vui lòng điền đầy đủ thông tin: ${missingFieldNames.join(', ')}`
+        `Vui lòng điền đầy đủ thông tin: ${missingFieldNames.join(', ')}`,
       );
       return;
     }
