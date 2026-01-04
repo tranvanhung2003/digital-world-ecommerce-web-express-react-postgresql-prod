@@ -18,8 +18,8 @@ const addressSchema = Joi.object({
   }),
   address2: Joi.string().allow('').optional(),
   city: Joi.string().required().messages({
-    'string.empty': 'Thành phố không được để trống',
-    'any.required': 'Thành phố là trường bắt buộc',
+    'string.empty': 'Quận/Huyện không được để trống',
+    'any.required': 'Quận/Huyện là trường bắt buộc',
   }),
   state: Joi.string().required().messages({
     'string.empty': 'Tỉnh/Thành phố không được để trống',

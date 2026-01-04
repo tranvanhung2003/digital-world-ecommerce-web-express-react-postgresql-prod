@@ -17,8 +17,8 @@ const createOrderSchema = Joi.object({
   }),
   shippingAddress2: Joi.string().allow('').optional(),
   shippingCity: Joi.string().required().messages({
-    'string.empty': 'Thành phố giao hàng không được để trống',
-    'any.required': 'Thành phố giao hàng là trường bắt buộc',
+    'string.empty': 'Quận/Huyện giao hàng không được để trống',
+    'any.required': 'Quận/Huyện giao hàng là trường bắt buộc',
   }),
   shippingState: Joi.string().required().messages({
     'string.empty': 'Tỉnh/Thành phố giao hàng không được để trống',
@@ -49,8 +49,8 @@ const createOrderSchema = Joi.object({
   }),
   billingAddress2: Joi.string().allow('').optional(),
   billingCity: Joi.string().required().messages({
-    'string.empty': 'Thành phố thanh toán không được để trống',
-    'any.required': 'Thành phố thanh toán là trường bắt buộc',
+    'string.empty': 'Quận/Huyện thanh toán không được để trống',
+    'any.required': 'Quận/Huyện thanh toán là trường bắt buộc',
   }),
   billingState: Joi.string().required().messages({
     'string.empty': 'Tỉnh/Thành phố thanh toán không được để trống',

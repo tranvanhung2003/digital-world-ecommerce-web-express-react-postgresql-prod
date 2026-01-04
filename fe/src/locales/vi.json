@@ -329,7 +329,7 @@
       "email": "Địa Chỉ Email",
       "phone": "Số Điện Thoại",
       "address": "Địa Chỉ",
-      "city": "Thành Phố",
+      "city": "Quận/Huyện",
       "state": "Tỉnh/Thành",
       "zipCode": "Mã Bưu Điện",
       "country": "Quốc Gia"
