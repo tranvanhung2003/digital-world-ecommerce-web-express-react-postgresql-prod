@@ -418,6 +418,7 @@ const deleteUser = catchAsync(async (req, res) => {
 const getProductById = catchAsync(async (req, res) => {
   const { id } = req.params;
 
+  // Tìm sản phẩm theo ID kèm các quan hệ liên quan
   const product = await Product.findByPk(id, {
     include: [
       {
@@ -450,6 +451,7 @@ const getProductById = catchAsync(async (req, res) => {
     ],
   });
 
+  // Kiểm tra sự tồn tại của sản phẩm
   if (!product) {
     throw new AppError('Không tìm thấy sản phẩm', 404);
   }
