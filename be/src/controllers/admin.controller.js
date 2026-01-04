@@ -193,14 +193,16 @@ const getDashboardStats = catchAsync(async (req, res) => {
 const getDetailedStats = catchAsync(async (req, res) => {
   const { startDate, endDate, groupBy = 'day' } = req.query;
 
+  // Kiểm tra startDate và endDate bắt buộc phải có
   if (!startDate || !endDate) {
     throw new AppError('Vui lòng cung cấp ngày bắt đầu và ngày kết thúc', 400);
   }
 
+  // Chuyển đổi chuỗi ngày thành đối tượng Date
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  // Format theo groupBy cho Postgresql
+  // Xác định định dạng ngày tháng dựa trên groupBy
   let dateFormat;
   switch (groupBy) {
     case 'hour':
@@ -281,6 +283,7 @@ const getDetailedStats = catchAsync(async (req, res) => {
  * Quản lý Users - Lấy danh sách user
  */
 const getAllUsers = catchAsync(async (req, res) => {
+  // Lấy các tham số lọc và phân trang từ query
   const {
     page = 1,
     limit = 10,
@@ -291,10 +294,13 @@ const getAllUsers = catchAsync(async (req, res) => {
     isEmailVerified,
   } = req.query;
 
+  // Tính toán offset cho phân trang
   const offset = (page - 1) * limit;
+
+  // Xây dựng điều kiện lọc
   const whereClause = {};
 
-  // Filter theo tìm kiếm
+  // Tìm kiếm theo tên, email hoặc số điện thoại
   if (search) {
     whereClause[Op.or] = [
       { firstName: { [Op.like]: `%${search}%` } },
@@ -309,11 +315,12 @@ const getAllUsers = catchAsync(async (req, res) => {
     whereClause.role = role;
   }
 
-  // Filter theo email verification
+  // Filter theo isEmailVerified
   if (isEmailVerified !== undefined) {
     whereClause.isEmailVerified = isEmailVerified === 'true';
   }
 
+  // Truy vấn database với phân trang và lọc
   const { count, rows: users } = await User.findAndCountAll({
     where: whereClause,
     limit: parseInt(limit),
@@ -385,15 +392,18 @@ const updateUser = catchAsync(async (req, res) => {
 const deleteUser = catchAsync(async (req, res) => {
   const { id } = req.params;
 
+  // Không cho phép xóa chính mình
   if (req.user.id === id) {
     throw new AppError('Không thể xóa tài khoản của chính mình', 403);
   }
 
+  // Kiểm tra sự tồn tại của user
   const user = await User.findByPk(id);
   if (!user) {
     throw new AppError('Không tìm thấy người dùng', 404);
   }
 
+  // Xóa user
   await user.destroy();
 
   res.status(200).json({
