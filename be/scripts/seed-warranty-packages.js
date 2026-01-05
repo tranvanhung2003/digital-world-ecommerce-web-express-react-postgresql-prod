@@ -1,5 +1,4 @@
-require('dotenv').config();
-const { WarrantyPackage, User } = require('../src/models');
+const { WarrantyPackage } = require('../src/models');
 
 const SAMPLE_WARRANTY_PACKAGES = [
   {

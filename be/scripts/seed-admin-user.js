@@ -1,8 +1,3 @@
-/**
- * Script seed tài khoản admin
- * Chạy lệnh: node scripts/seed-admin-user.js
- */
-
 const { User } = require('../src/models');
 const { v4: uuidv4 } = require('uuid');
 
