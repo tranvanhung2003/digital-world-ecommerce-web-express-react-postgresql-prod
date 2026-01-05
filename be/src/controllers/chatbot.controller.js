@@ -557,7 +557,7 @@ class ChatbotController {
       const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
       const enhancedPrompt = `
-        Bạn là trợ lý bán hàng thông minh của DigitalWorld - một cửa hàng thời trang trực tuyến.
+        Bạn là trợ lý bán hàng thông minh của DigitalWorld - một cửa hàng thiết bị điện tử trực tuyến.
         Mục tiêu chính của bạn là giúp khách hàng tìm và mua sản phẩm phù hợp.
         
         Ngữ cảnh: ${JSON.stringify(context)}

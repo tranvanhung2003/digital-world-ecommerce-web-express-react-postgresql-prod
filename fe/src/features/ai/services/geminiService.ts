@@ -44,7 +44,7 @@ class GeminiService {
 
         this.isInitialized = true;
         console.log(
-          `Gemini AI model initialized successfully with ${modelName}`
+          `Gemini AI model initialized successfully with ${modelName}`,
         );
         return;
       } catch (error) {
@@ -78,8 +78,8 @@ class GeminiService {
 
     return `
 THÔNG TIN CỬA HÀNG:
-- Tên: Fashion Store
-- Chuyên bán: Thời trang, phụ kiện, giày dép
+- Tên: DigitalWorld - Cửa hàng thiết bị điện tử trực tuyến
+- Chuyên bán: Laptop, điện thoại, phụ kiện, thiết bị thông minh
 - Chính sách: Đổi trả trong 7 ngày, miễn phí vận chuyển đơn hàng trên 500k
 
 DANH MỤC SẢN PHẨM:
@@ -89,7 +89,7 @@ SẢN PHẨM HIỆN CÓ (${productsInfo.length} sản phẩm mẫu):
 ${productsInfo
   .map(
     (product) =>
-      `- ${product.name} (${product.category}): ${product.price} - ${product.description} - ${product.inStock ? 'Còn hàng' : 'Hết hàng'} - Đánh giá: ${product.rating}/5`
+      `- ${product.name} (${product.category}): ${product.price} - ${product.description} - ${product.inStock ? 'Còn hàng' : 'Hết hàng'} - Đánh giá: ${product.rating}/5`,
   )
   .join('\n')}
 
@@ -102,7 +102,7 @@ CHÍNH SÁCH CỬA HÀNG:
   }
 
   private createSystemPrompt(): string {
-    return `Bạn là trợ lý mua sắm AI thông minh cho một cửa hàng thời trang trực tuyến.
+    return `Bạn là trợ lý mua sắm AI thông minh cho một cửa hàng thiết bị điện tử trực tuyến.
 
 NHIỆM VỤ:
 - Tư vấn sản phẩm dựa trên dữ liệu thực tế của cửa hàng
@@ -191,7 +191,7 @@ Hãy trả lời một cách hữu ích và chuyên nghiệp:`;
 
   private generateSuggestions(
     userMessage: string,
-    aiResponse: string
+    aiResponse: string,
   ): string[] {
     const lowerMessage = userMessage.toLowerCase();
     const lowerResponse = aiResponse.toLowerCase();
@@ -268,12 +268,12 @@ Hãy trả lời một cách hữu ích và chuyên nghiệp:`;
   async listAvailableModels() {
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`,
       );
       const data = await response.json();
       console.log(
         'Available models:',
-        data.models?.map((m: any) => m.name)
+        data.models?.map((m: any) => m.name),
       );
       return data.models;
     } catch (error) {

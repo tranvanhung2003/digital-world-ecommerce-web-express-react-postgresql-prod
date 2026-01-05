@@ -116,13 +116,13 @@ class GeminiChatbotService {
       .join('\n');
 
     return `
-Bạn là một trợ lý AI thông minh cho cửa hàng thời trang DigitalWorld. Bạn có thể xử lý mọi loại câu hỏi:
+Bạn là một trợ lý AI thông minh cho cửa hàng thiết bị điện tử DigitalWorld. Bạn có thể xử lý mọi loại câu hỏi:
 
 KHẢ NĂNG CỦA BẠN:
 1. Tìm kiếm và gợi ý sản phẩm
 2. Trả lời câu hỏi về chính sách, dịch vụ
 3. Hỗ trợ khách hàng với mọi thắc mắc
-4. Tư vấn thời trang và phong cách
+4. Tư vấn thiết bị điện tử
 5. Xử lý khiếu nại và phản hồi
 6. Trò chuyện thân thiện, tự nhiên
 7. Trả lời câu hỏi kiến thức chung một cách thông minh và hài hước
@@ -131,7 +131,7 @@ DANH SÁCH SẢN PHẨM CÓ SẴN:
 ${productList}
 
 THÔNG TIN CỬA HÀNG:
-- Tên: DigitalWorld - Cửa hàng thời trang trực tuyến
+- Tên: DigitalWorld - Cửa hàng thiết bị điện tử trực tuyến
 - Chuyên: Áo thun, giày thể thao, balo, túi xách
 - Chính sách: Đổi trả trong 7 ngày, miễn phí vận chuyển đơn >500k
 - Thanh toán: COD, chuyển khoản, thẻ tín dụng
@@ -543,19 +543,19 @@ LƯU Ý QUAN TRỌNG:
       };
     }
 
-    // Off-topic but friendly responses
+    // Off-topic but friendly responses - Updated for Electronics & Tech
     if (
       lowerMessage.includes('thời tiết') ||
       lowerMessage.includes('weather')
     ) {
       return {
         response:
-          '🌤️ Thời tiết hôm nay thế nào nhỉ? Dù nắng hay mưa thì outfit đẹp vẫn quan trọng! DigitalWorld có nhiều sản phẩm phù hợp mọi thời tiết đấy!',
+          '🌤️ Dù thời tiết thế nào thì làm việc hay giải trí với một chiếc Laptop mượt mà vẫn là tuyệt nhất! DigitalWorld có sẵn các dòng máy chống chói, pin trâu phù hợp cho mọi không gian đấy!',
         suggestions: [
-          'Áo thun mát mẻ ☀️',
-          'Giày chống nước 🌧️',
-          'Balo đi học/làm 🎒',
-          'Phụ kiện thời trang ✨',
+          'Laptop văn phòng 💻',
+          'iPhone/Samsung mới 📱',
+          'Tai nghe chống ồn 🎧',
+          'Sạc dự phòng tiện lợi ✨',
         ],
         intent: 'off_topic',
       };
@@ -568,31 +568,12 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '🍕 Haha, tôi không bán đồ ăn nhưng có thể giúp bạn chọn outfit đẹp để đi ăn! DigitalWorld có nhiều trang phục thời trang cho mọi dịp đấy!',
+          '🍕 Tôi không rành về ẩm thực, nhưng nếu bạn cần một chiếc Smartphone chụp ảnh món ăn "siêu nét" hay Tablet để xem review đồ ăn thì tôi luôn sẵn sàng hỗ trợ!',
         suggestions: [
-          'Áo đẹp đi chơi 👕',
-          'Giày sneaker trendy 👟',
-          'Túi xách thời trang 👜',
-          'Set đồ hoàn hảo ✨',
-        ],
-        intent: 'off_topic',
-      };
-    }
-
-    // Xử lý câu hỏi về chủ quyền lãnh thổ
-    if (
-      (lowerMessage.includes('hoàng sa') ||
-        lowerMessage.includes('trường sa')) &&
-      lowerMessage.includes('của')
-    ) {
-      return {
-        response:
-          '🇻🇳 Quần đảo Hoàng Sa và Trường Sa là của Việt Nam! Chủ quyền lãnh thổ là điều thiêng liêng. Nhân tiện, DigitalWorld đang có nhiều mẫu áo thun in hình bản đồ Việt Nam cực đẹp đấy! Bạn có muốn xem không? 😊',
-        suggestions: [
-          'Xem áo thun in hình bản đồ Việt Nam',
-          'Tìm sản phẩm khác',
-          'Xem khuyến mãi hôm nay',
-          'Liên hệ tư vấn',
+          'Điện thoại chụp ảnh đẹp 📸',
+          'iPad/Máy tính bảng 🍎',
+          'Loa Bluetooth giải trí 🔊',
+          'Ưu đãi công nghệ 🎁',
         ],
         intent: 'off_topic',
       };
@@ -607,7 +588,7 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '📚 Đây là một chủ đề thú vị! Tôi có thể trò chuyện về nhiều vấn đề, nhưng chuyên môn chính của tôi là tư vấn thời trang và sản phẩm của DigitalWorld. Bạn có muốn tìm hiểu về các sản phẩm đang hot không? 😊',
+          '📚 Đây là một chủ đề thú vị! Tôi có thể trò chuyện về nhiều vấn đề, nhưng chuyên môn chính của tôi là tư vấn thiết bị điện tử và sản phẩm của DigitalWorld. Bạn có muốn tìm hiểu về các sản phẩm đang hot không? 😊',
         suggestions: [
           'Xem sản phẩm mới nhất',
           'Tìm sản phẩm theo phong cách',
@@ -626,7 +607,7 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          'Chào bạn! 👋 Rất vui được gặp bạn tại DigitalWorld! Tôi là trợ lý AI, sẵn sàng giúp bạn tìm những sản phẩm thời trang tuyệt vời. Bạn đang tìm gì vậy?',
+          'Chào bạn! 👋 Rất vui được gặp bạn tại DigitalWorld! Tôi là trợ lý AI, sẵn sàng giúp bạn tìm những sản phẩm thiết bị điện tử tuyệt vời. Bạn đang tìm gì vậy?',
         suggestions: [
           'Sản phẩm hot nhất 🔥',
           'Khuyến mãi hôm nay 🎉',
@@ -640,12 +621,12 @@ LƯU Ý QUAN TRỌNG:
     // Default response
     return {
       response:
-        'Tôi là trợ lý AI của DigitalWorld! 😊 Tôi có thể giúp bạn:\n• Tìm sản phẩm phù hợp\n• Tư vấn giá cả, size\n• Hỗ trợ chính sách đổi trả\n• Trò chuyện về thời trang\n\nBạn cần hỗ trợ gì nhỉ?',
+        'Tôi là trợ lý AI của DigitalWorld! 😊 Tôi có thể giúp bạn:\n• Tìm sản phẩm phù hợp\n• Tư vấn giá cả, size\n• Hỗ trợ chính sách đổi trả\n• Trò chuyện về thiết bị điện tử\n\nBạn cần hỗ trợ gì nhỉ?',
       suggestions: [
         'Tìm sản phẩm 🔍',
         'Xem khuyến mãi 🎁',
         'Hỏi về chính sách 📋',
-        'Tư vấn thời trang 💅',
+        'Tư vấn thiết bị điện tử 💅',
       ],
       intent: 'general',
     };
