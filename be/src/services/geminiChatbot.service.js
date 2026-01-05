@@ -406,49 +406,66 @@ LƯU Ý QUAN TRỌNG:
   getFallbackResponse(userMessage) {
     const lowerMessage = userMessage.toLowerCase();
 
-    // Product search patterns
+    // Laptop & Máy tính (Thay thế cho Balo)
     if (
-      lowerMessage.includes('balo') ||
-      lowerMessage.includes('bag') ||
-      lowerMessage.includes('backpack')
+      lowerMessage.includes('laptop') ||
+      lowerMessage.includes('máy tính') ||
+      lowerMessage.includes('macbook')
     ) {
       return {
         response:
-          '🎒 Chúng tôi có nhiều loại balo chất lượng! Balo Adidas Classic, Nike Brasilia... Bạn muốn xem loại nào?',
+          '💻 Chúng tôi có nhiều dòng Laptop mạnh mẽ! Từ MacBook, Dell XPS đến Laptop Gaming ASUS, MSI... Bạn cần máy cho văn phòng hay đồ họa/chơi game?',
         suggestions: [
-          'Balo Adidas',
-          'Balo Nike',
-          'Balo học sinh',
-          'Xem tất cả balo',
+          'MacBook mới nhất',
+          'Laptop Văn phòng',
+          'Laptop Gaming',
+          'Xem tất cả máy tính',
         ],
         intent: 'product_search',
       };
     }
 
-    if (lowerMessage.includes('giày') || lowerMessage.includes('shoe')) {
+    // Điện thoại & Smartphone (Thay thế cho Giày)
+    if (
+      lowerMessage.includes('điện thoại') ||
+      lowerMessage.includes('phone') ||
+      lowerMessage.includes('iphone') ||
+      lowerMessage.includes('samsung')
+    ) {
       return {
         response:
-          '👟 Chúng tôi có nhiều loại giày thể thao hot! Nike, Adidas, Converse, Vans... Bạn thích loại nào?',
+          '📱 Thế giới Smartphone đa dạng tại DigitalWorld! iPhone 15 Pro, Samsung S24 Ultra, Xiaomi... Bạn thích hệ điều hành iOS hay Android?',
         suggestions: [
-          'Giày Nike',
-          'Giày Adidas',
-          'Giày Converse',
-          'Xem tất cả giày',
+          'iPhone series',
+          'Samsung Galaxy',
+          'Điện thoại giá rẻ',
+          'Xem tất cả điện thoại',
         ],
         intent: 'product_search',
       };
     }
 
-    if (lowerMessage.includes('áo') || lowerMessage.includes('shirt')) {
+    // Phụ kiện & Linh kiện (Thay thế cho Áo)
+    if (
+      lowerMessage.includes('phụ kiện') ||
+      lowerMessage.includes('tai nghe') ||
+      lowerMessage.includes('chuột') ||
+      lowerMessage.includes('bàn phím')
+    ) {
       return {
         response:
-          '👕 Chúng tôi có nhiều mẫu áo thun đẹp! Nike Dri-FIT, Adidas 3-Stripes, Uniqlo UT... Bạn muốn xem loại nào?',
-        suggestions: ['Áo Nike', 'Áo Adidas', 'Áo Uniqlo', 'Xem tất cả áo'],
+          '🎧 Phụ kiện công nghệ cực chất! Tai nghe chống ồn Sony, bàn phím cơ Logitech, chuột gaming Razer... Bạn muốn nâng cấp gì cho góc làm việc?',
+        suggestions: [
+          'Tai nghe Bluetooth',
+          'Bàn phím cơ',
+          'Chuột không dây',
+          'Sạc dự phòng',
+        ],
         intent: 'product_search',
       };
     }
 
-    // Pricing inquiries
+    // Pricing inquiries (Cập nhật khoảng giá đồ điện tử)
     if (
       lowerMessage.includes('giá') ||
       lowerMessage.includes('bao nhiêu') ||
@@ -456,18 +473,18 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '💰 DigitalWorld có sản phẩm đa dạng từ 400k-5M! Bạn muốn tìm trong tầm giá nào? Tôi sẽ gợi ý sản phẩm phù hợp nhất!',
+          '💰 DigitalWorld có sản phẩm từ phụ kiện 200k đến Laptop cao cấp 60-70 triệu! Bạn đang tìm sản phẩm trong tầm giá nào để tôi tư vấn?',
         suggestions: [
-          'Dưới 1 triệu 💸',
-          'Từ 1-2 triệu 💳',
-          'Từ 2-5 triệu 💎',
-          'Xem khuyến mãi 🎉',
+          'Dưới 10 triệu 💸',
+          'Từ 10 - 25 triệu 💳',
+          'Trên 25 triệu 💎',
+          'Săn Deal hot 🎉',
         ],
         intent: 'pricing',
       };
     }
 
-    // Policy inquiries
+    // Policy inquiries (Cập nhật bảo hành điện tử)
     if (
       lowerMessage.includes('đổi trả') ||
       lowerMessage.includes('bảo hành') ||
@@ -475,12 +492,12 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '📋 Chính sách DigitalWorld:\n• Đổi trả trong 7 ngày\n• Miễn phí ship đơn >500k\n• Bảo hành theo nhà sản xuất\n• Hỗ trợ 24/7\nBạn cần biết thêm gì không?',
+          '📋 Chính sách DigitalWorld:\n• Bảo hành chính hãng 12-24 tháng\n• 1 đổi 1 trong 30 ngày nếu lỗi NSX\n• Miễn phí vệ sinh máy trọn đời\n• Hỗ trợ kỹ thuật online 24/7\nBạn cần hỗ trợ thêm về chính sách nào?',
         suggestions: [
-          'Cách đổi trả',
-          'Phí vận chuyển',
-          'Thời gian giao hàng',
-          'Liên hệ hỗ trợ',
+          'Kiểm tra bảo hành',
+          'Cách thức đổi trả',
+          'Trung tâm bảo hành',
+          'Gói bảo hành mở rộng',
         ],
         intent: 'policy',
       };
@@ -494,31 +511,32 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '🚚 Thông tin giao hàng:\n• Nội thành: 1-3 ngày\n• Ngoại thành: 3-7 ngày\n• Miễn phí ship đơn >500k\n• COD toàn quốc\nBạn ở khu vực nào ạ?',
+          '🚚 Thông tin giao hàng đồ công nghệ:\n• Giao hỏa tốc 2h (Nội thành)\n• Toàn quốc từ 2-4 ngày\n• Kiểm tra hàng trước khi thanh toán\n• Miễn phí vận chuyển đơn từ 2 triệu\nBạn muốn nhận hàng ở đâu?',
         suggestions: [
-          'Phí ship nội thành',
-          'Phí ship ngoại thành',
-          'Giao hàng nhanh',
-          'Thanh toán COD',
+          'Giao hàng hỏa tốc',
+          'Phí ship toàn quốc',
+          'Theo dõi đơn hàng',
+          'Thanh toán khi nhận hàng',
         ],
         intent: 'support',
       };
     }
 
-    // Size inquiries
+    // Tech Specs inquiries (Thay thế cho Size)
     if (
-      lowerMessage.includes('size') ||
-      lowerMessage.includes('kích thước') ||
-      lowerMessage.includes('số')
+      lowerMessage.includes('cấu hình') ||
+      lowerMessage.includes('thông số') ||
+      lowerMessage.includes('ram') ||
+      lowerMessage.includes('kích thước')
     ) {
       return {
         response:
-          '📏 Hướng dẫn chọn size:\n• Giày: 39-44 (nam), 35-40 (nữ)\n• Áo: S, M, L, XL, XXL\n• Balo: One size\nBạn cần tư vấn size sản phẩm nào?',
+          '⚙️ Tư vấn thông số kỹ thuật:\n• Laptop: RAM 8GB/16GB/32GB, Màn 13/14/15.6 inch\n• Điện thoại: Màn hình OLED, Chip xử lý mới nhất\n• Lưu trữ: SSD 256GB đến 2TB\nBạn cần máy cấu hình mạnh để làm việc hay giải trí?',
         suggestions: [
-          'Size giày nam',
-          'Size giày nữ',
-          'Size áo thun',
-          'Bảng size chi tiết',
+          'Tư vấn RAM & CPU',
+          'Kích thước màn hình',
+          'Dung lượng bộ nhớ',
+          'Chọn máy theo nhu cầu',
         ],
         intent: 'support',
       };
@@ -532,35 +550,36 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '😔 DigitalWorld rất xin lỗi vì trải nghiệm không tốt! Chúng tôi luôn lắng nghe và cải thiện. Bạn có thể chia sẻ chi tiết để chúng tôi hỗ trợ tốt nhất không?',
+          '😔 DigitalWorld chân thành xin lỗi về sự cố kỹ thuật hoặc dịch vụ khiến bạn không hài lòng! Chúng tôi sẽ ưu tiên giải quyết ngay. Bạn có thể để lại số điện thoại hoặc chi tiết lỗi được không?',
         suggestions: [
-          'Liên hệ hotline',
-          'Chat với tư vấn viên',
-          'Gửi email khiếu nại',
-          'Đánh giá dịch vụ',
+          'Gặp kỹ thuật viên',
+          'Hotline hỗ trợ gấp',
+          'Phản hồi dịch vụ',
+          'Yêu cầu bảo hành',
         ],
         intent: 'complaint',
       };
     }
 
-    // Off-topic but friendly responses - Updated for Electronics & Tech
+    // Off-topic: Weather
     if (
       lowerMessage.includes('thời tiết') ||
       lowerMessage.includes('weather')
     ) {
       return {
         response:
-          '🌤️ Dù thời tiết thế nào thì làm việc hay giải trí với một chiếc Laptop mượt mà vẫn là tuyệt nhất! DigitalWorld có sẵn các dòng máy chống chói, pin trâu phù hợp cho mọi không gian đấy!',
+          '🌤️ Thời tiết này mà ngồi máy lạnh làm việc với một chiếc Laptop mượt mà thì tuyệt nhất! Đừng quên DigitalWorld đang có nhiều mẫu máy chống chói cực tốt đấy!',
         suggestions: [
           'Laptop văn phòng 💻',
-          'iPhone/Samsung mới 📱',
-          'Tai nghe chống ồn 🎧',
-          'Sạc dự phòng tiện lợi ✨',
+          'iPad/Tablet giải trí 📱',
+          'Quạt tản nhiệt Laptop 🌬️',
+          'Xem khuyến mãi 🎉',
         ],
         intent: 'off_topic',
       };
     }
 
+    // Off-topic: Food
     if (
       lowerMessage.includes('ăn') ||
       lowerMessage.includes('food') ||
@@ -568,18 +587,18 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '🍕 Tôi không rành về ẩm thực, nhưng nếu bạn cần một chiếc Smartphone chụp ảnh món ăn "siêu nét" hay Tablet để xem review đồ ăn thì tôi luôn sẵn sàng hỗ trợ!',
+          '🍕 Tôi không rành về ẩm thực, nhưng nếu bạn muốn tìm Smartphone camera "khủng" để chụp ảnh món ăn sống ảo hay Tablet để xem công thức nấu ăn thì tôi là chuyên gia đây!',
         suggestions: [
           'Điện thoại chụp ảnh đẹp 📸',
-          'iPad/Máy tính bảng 🍎',
-          'Loa Bluetooth giải trí 🔊',
-          'Ưu đãi công nghệ 🎁',
+          'Máy tính bảng giá tốt 🍎',
+          'Loa nghe nhạc khi nấu ăn 🔊',
+          'Ưu đãi hôm nay 🎁',
         ],
         intent: 'off_topic',
       };
     }
 
-    // Xử lý các câu hỏi chính trị, lịch sử
+    // Chính trị, lịch sử
     if (
       lowerMessage.includes('chính trị') ||
       lowerMessage.includes('lịch sử') ||
@@ -588,12 +607,12 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          '📚 Đây là một chủ đề thú vị! Tôi có thể trò chuyện về nhiều vấn đề, nhưng chuyên môn chính của tôi là tư vấn thiết bị điện tử và sản phẩm của DigitalWorld. Bạn có muốn tìm hiểu về các sản phẩm đang hot không? 😊',
+          '📚 Đây là những chủ đề rất rộng lớn! Tuy nhiên, đam mê lớn nhất của tôi là tư vấn các siêu phẩm công nghệ và giải pháp thiết bị điện tử tại DigitalWorld. Bạn có muốn xem qua những mẫu máy tính mới nhất không? 😊',
         suggestions: [
-          'Xem sản phẩm mới nhất',
-          'Tìm sản phẩm theo phong cách',
-          'Xem khuyến mãi hôm nay',
-          'Liên hệ tư vấn',
+          'Sản phẩm mới nhất',
+          'Cấu hình Laptop mạnh nhất',
+          'Khuyến mãi tháng này',
+          'Liên hệ chuyên viên',
         ],
         intent: 'off_topic',
       };
@@ -607,12 +626,12 @@ LƯU Ý QUAN TRỌNG:
     ) {
       return {
         response:
-          'Chào bạn! 👋 Rất vui được gặp bạn tại DigitalWorld! Tôi là trợ lý AI, sẵn sàng giúp bạn tìm những sản phẩm thiết bị điện tử tuyệt vời. Bạn đang tìm gì vậy?',
+          'Chào bạn! 👋 Chào mừng bạn đến với DigitalWorld! Tôi là trợ lý AI công nghệ, sẵn sàng giúp bạn tìm Laptop, Điện thoại và Phụ kiện ưng ý nhất. Bạn cần tôi tư vấn gì ạ?',
         suggestions: [
-          'Sản phẩm hot nhất 🔥',
-          'Khuyến mãi hôm nay 🎉',
-          'Tư vấn phong cách 💫',
-          'Xem tất cả sản phẩm 🛍️',
+          'Siêu phẩm bán chạy 🔥',
+          'Tìm Laptop theo giá 💻',
+          'Điện thoại mới nhất 📱',
+          'Xem toàn bộ cửa hàng 🛍️',
         ],
         intent: 'general',
       };
@@ -621,12 +640,12 @@ LƯU Ý QUAN TRỌNG:
     // Default response
     return {
       response:
-        'Tôi là trợ lý AI của DigitalWorld! 😊 Tôi có thể giúp bạn:\n• Tìm sản phẩm phù hợp\n• Tư vấn giá cả, size\n• Hỗ trợ chính sách đổi trả\n• Trò chuyện về thiết bị điện tử\n\nBạn cần hỗ trợ gì nhỉ?',
+        'Tôi là trợ lý ảo của DigitalWorld! 😊 Tôi có thể giúp bạn:\n• Tư vấn cấu hình Laptop/PC\n• So sánh các dòng Smartphone\n• Thông tin bảo hành & sửa chữa\n• Cập nhật giá đồ công nghệ\n\nBạn đang quan tâm đến sản phẩm nào nhỉ?',
       suggestions: [
-        'Tìm sản phẩm 🔍',
-        'Xem khuyến mãi 🎁',
-        'Hỏi về chính sách 📋',
-        'Tư vấn thiết bị điện tử 💅',
+        'Tìm Laptop 🔍',
+        'Chọn Smartphone 📱',
+        'Xem Phụ kiện 🎧',
+        'Chính sách bảo hành 📋',
       ],
       intent: 'general',
     };
