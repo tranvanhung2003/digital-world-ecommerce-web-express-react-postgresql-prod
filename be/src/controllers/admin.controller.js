@@ -20,6 +20,7 @@ const {
   validateVariantAttributes,
   generateVariantSku,
 } = require('../utils/productHelpers');
+const { getField } = require('../utils/helpers');
 
 /**
  * Thống kê tổng quan
@@ -123,15 +124,18 @@ const getDashboardStats = catchAsync(async (req, res) => {
     ? ((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
     : 0;
 
+  const _quantity = getField(OrderItem, 'quantity');
+  const _price = getField(OrderItem, 'price');
+
   // Thống kê top 5 sản phẩm bán chạy nhất
   const topProducts = await OrderItem.findAll({
     attributes: [
       'productId',
-      [Sequelize.fn('SUM', Sequelize.col('quantity')), 'totalSold'],
+      [Sequelize.fn('SUM', Sequelize.col(_quantity)), 'totalSold'],
       [
         Sequelize.fn(
           'SUM',
-          Sequelize.literal('quantity * "OrderItem"."price"'),
+          Sequelize.literal(`"${_quantity}" * "OrderItem"."${_price}"`),
         ),
         'totalRevenue',
       ],
@@ -143,7 +147,7 @@ const getDashboardStats = catchAsync(async (req, res) => {
       },
     ],
     group: ['productId', 'Product.id'],
-    order: [[Sequelize.fn('SUM', Sequelize.col('quantity')), 'DESC']],
+    order: [[Sequelize.fn('SUM', Sequelize.col(_quantity)), 'DESC']],
     limit: 5,
   });
 
@@ -221,32 +225,42 @@ const getDetailedStats = catchAsync(async (req, res) => {
       dateFormat = 'YYYY-MM-DD';
   }
 
+  const Order_createdAt = getField(Order, 'createdAt');
+  const Order_total = getField(Order, 'total');
+
   // Thống kê đơn hàng theo khoảng thời gian (từ startDate đến endDate)
   const orderStats = await Order.findAll({
     attributes: [
       [
-        Sequelize.fn('TO_CHAR', Sequelize.col('created_at'), dateFormat),
+        Sequelize.fn('TO_CHAR', Sequelize.col(Order_createdAt), dateFormat),
         'period',
       ],
       [Sequelize.fn('COUNT', Sequelize.col('id')), 'orderCount'],
-      [Sequelize.fn('SUM', Sequelize.col('total')), 'revenue'],
+      [Sequelize.fn('SUM', Sequelize.col(Order_total)), 'revenue'],
     ],
     where: {
       createdAt: {
         [Op.between]: [start, end],
       },
     },
-    group: [Sequelize.fn('TO_CHAR', Sequelize.col('created_at'), dateFormat)],
+    group: [
+      Sequelize.fn('TO_CHAR', Sequelize.col(Order_createdAt), dateFormat),
+    ],
     order: [
-      [Sequelize.fn('TO_CHAR', Sequelize.col('created_at'), dateFormat), 'ASC'],
+      [
+        Sequelize.fn('TO_CHAR', Sequelize.col(Order_createdAt), dateFormat),
+        'ASC',
+      ],
     ],
   });
+
+  const User_createdAt = getField(User, 'createdAt');
 
   // Thống kê user mới theo khoảng thời gian (từ startDate đến endDate)
   const userStats = await User.findAll({
     attributes: [
       [
-        Sequelize.fn('TO_CHAR', Sequelize.col('created_at'), dateFormat),
+        Sequelize.fn('TO_CHAR', Sequelize.col(User_createdAt), dateFormat),
         'period',
       ],
       [Sequelize.fn('COUNT', Sequelize.col('id')), 'newUsers'],
@@ -257,9 +271,12 @@ const getDetailedStats = catchAsync(async (req, res) => {
         [Op.between]: [start, end],
       },
     },
-    group: [Sequelize.fn('TO_CHAR', Sequelize.col('created_at'), dateFormat)],
+    group: [Sequelize.fn('TO_CHAR', Sequelize.col(User_createdAt), dateFormat)],
     order: [
-      [Sequelize.fn('TO_CHAR', Sequelize.col('created_at'), dateFormat), 'ASC'],
+      [
+        Sequelize.fn('TO_CHAR', Sequelize.col(User_createdAt), dateFormat),
+        'ASC',
+      ],
     ],
   });
 
@@ -467,9 +484,11 @@ const getProductById = catchAsync(async (req, res) => {
  */
 const createProduct = catchAsync(async (req, res) => {
   console.log(
-    'Create product request body:',
+    'Create product từ request body:',
     JSON.stringify(req.body, null, 2),
   );
+
+  // Lấy dữ liệu từ request body
   const {
     name,
     baseName,
@@ -492,7 +511,7 @@ const createProduct = catchAsync(async (req, res) => {
     categoryIds = [],
     attributes = [],
     variants = [],
-    // New fields for laptops/computers
+    // Các trường mới cho laptop/máy tính
     condition = 'new',
     specifications = {},
     warrantyPackageIds = [],
@@ -527,7 +546,7 @@ const createProduct = catchAsync(async (req, res) => {
     description,
     shortDescription: shortDescription || description,
     price,
-    // Tạm thời bỏ qua compareAtPrice, sẽ cập nhật riêng
+    // Tạm thời bỏ qua compareAtPrice, sẽ cập nhật ở dưới
     compareAtPrice: null,
     images: images || [],
     thumbnail: images && images[0] ? images[0] : thumbnail,
@@ -540,16 +559,17 @@ const createProduct = catchAsync(async (req, res) => {
     seoTitle: seoTitle || name,
     seoDescription: seoDescription || description,
     seoKeywords: seoKeywords || [],
-    // New fields for laptops/computers
+    // Các trường mới cho laptop/máy tính
     condition,
     specifications: specifications || [],
     faqs: faqs || [],
   });
 
-  // Cập nhật compareAtPrice riêng bằng truy vấn SQL trực tiếp nếu có
-  console.log('comparePrice from request:', comparePrice);
+  // Cập nhật compareAtPrice riêng bằng truy vấn SQL trực tiếp
+  console.log('comparePrice từ request body:', comparePrice);
   if (comparePrice !== undefined) {
     const { sequelize } = require('../models');
+
     await sequelize.query(
       'UPDATE products SET compare_at_price = :comparePrice WHERE id = :id',
       {
@@ -561,7 +581,7 @@ const createProduct = catchAsync(async (req, res) => {
       },
     );
 
-    // Cập nhật lại giá trị trong đối tượng product
+    // Cập nhật lại giá trị compareAtPrice trong đối tượng product
     product.compareAtPrice = comparePrice;
   }
 
