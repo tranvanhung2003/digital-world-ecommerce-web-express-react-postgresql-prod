@@ -67,8 +67,11 @@ const SEED_WARRANTY_PACKAGES = [
 
 async function seed() {
   try {
-    for (const pkg of SEED_WARRANTY_PACKAGES) {
-      await WarrantyPackage.upsert(pkg);
+    for (const warrantyPackage of SEED_WARRANTY_PACKAGES) {
+      await WarrantyPackage.findOrCreate({
+        where: { id: warrantyPackage.id },
+        defaults: warrantyPackage,
+      });
     }
 
     console.log('Seed warranty packages thành công.');

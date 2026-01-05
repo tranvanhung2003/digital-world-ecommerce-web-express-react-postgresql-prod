@@ -283,22 +283,23 @@ const SEED_NEWS = [
 async function seed() {
   try {
     const user = await User.findOne({ where: { role: 'admin' } });
+
     if (!user) {
-      console.log('No admin user found. Run create-admin-user.js first.');
+      console.error('Không tìm thấy người dùng admin để gán bài viết tin tức.');
       process.exit(1);
     }
 
-    for (const post of SEED_NEWS) {
+    for (const news of SEED_NEWS) {
       await News.findOrCreate({
-        where: { slug: post.slug },
-        defaults: { ...post, userId: user.id },
+        where: { slug: news.slug },
+        defaults: { ...news, userId: user.id },
       });
     }
 
-    console.log('Sample news posts seeded successfully');
+    console.log('Seed news thành công.');
     process.exit(0);
   } catch (error) {
-    console.error('Error seeding news:', error);
+    console.error('Lỗi khi seed news:', error);
     process.exit(1);
   }
 }
