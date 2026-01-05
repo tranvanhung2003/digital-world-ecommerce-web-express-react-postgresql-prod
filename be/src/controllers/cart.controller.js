@@ -273,49 +273,30 @@ const addToCart = async (req, res, next) => {
       transaction,
     });
 
+    const currentQuantity = cartItem ? cartItem.quantity : 0;
+    const finalQuantity = currentQuantity + quantity;
+
+    const stockQuantity = variantId
+      ? variant.stockQuantity
+      : product.stockQuantity;
+
+    if (stockQuantity < finalQuantity) {
+      throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
+    }
+
     if (cartItem) {
       // Trường hợp sản phẩm đã có trong giỏ hàng
       // Cập nhật số lượng mới
-      const newQuantity = cartItem.quantity + quantity;
-
-      // Kiểm tra có phải sản phẩm có biến thể hay không
-      if (variantId) {
-        // Nếu là sản phẩm có biến thể, kiểm tra số lượng tồn kho của biến thể
-        // Nếu vượt quá tồn kho, báo lỗi
-        if (variant.stockQuantity < newQuantity) {
-          throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
-        }
-      } else if (product.stockQuantity < newQuantity) {
-        // Nếu là sản phẩm không có biến thể, kiểm tra số lượng tồn kho của sản phẩm
-        // Nếu vượt quá tồn kho, báo lỗi
-        throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
-      }
-
-      // Cập nhật số lượng mới
-      await cartItem.update({ quantity: newQuantity }, { transaction });
+      await cartItem.update({ quantity: finalQuantity }, { transaction });
     } else {
       // Trường hợp sản phẩm chưa có trong giỏ hàng
-
-      // Kiểm tra có phải sản phẩm có biến thể hay không
-      if (variantId) {
-        // Nếu là sản phẩm có biến thể, kiểm tra số lượng tồn kho của biến thể
-        // Nếu vượt quá tồn kho, báo lỗi
-        if (variant.stockQuantity < quantity) {
-          throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
-        }
-      } else if (product.stockQuantity < quantity) {
-        // Nếu là sản phẩm không có biến thể, kiểm tra số lượng tồn kho của sản phẩm
-        // Nếu vượt quá tồn kho, báo lỗi
-        throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
-      }
-
       // Tạo mục giỏ hàng mới
       cartItem = await CartItem.create(
         {
           cartId: cart.id,
           productId,
           variantId: variantId || null,
-          quantity,
+          quantity: finalQuantity,
           price: variantId ? variant.price : product.price,
           warrantyPackageIds: validWarrantyPackageIds,
         },
@@ -333,13 +314,15 @@ const addToCart = async (req, res, next) => {
   }
 };
 
-// Update cart item
+/**
+ * Cập nhật số lượng sản phẩm
+ */
 const updateCartItem = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { quantity } = req.body;
 
-    // Find cart item
+    // Tìm mục giỏ hàng
     const cartItem = await CartItem.findByPk(id, {
       include: [
         {
@@ -361,43 +344,49 @@ const updateCartItem = async (req, res, next) => {
       throw new AppError('Không tìm thấy sản phẩm trong giỏ hàng', 404);
     }
 
-    // Check cart ownership
+    // Kiểm tra quyền sở hữu giỏ hàng
     if (req.user) {
+      // Trường hợp người dùng đã đăng nhập
       if (cartItem.Cart.userId !== req.user.id) {
         throw new AppError('Bạn không có quyền truy cập giỏ hàng này', 403);
       }
     } else {
+      // Trường hợp người dùng chưa đăng nhập
       const { sessionId } = req.cookies;
       if (!sessionId || cartItem.Cart.sessionId !== sessionId) {
         throw new AppError('Bạn không có quyền truy cập giỏ hàng này', 403);
       }
     }
 
-    // Check stock
-    if (cartItem.ProductVariant) {
-      if (cartItem.ProductVariant.stockQuantity < quantity) {
-        throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
-      }
-    } else if (cartItem.Product.stockQuantity < quantity) {
+    // Lấy số lượng tồn kho hiện tại, nếu có biến thể thì lấy của biến thể.
+    // Không có biến thể thì lấy của sản phẩm.
+    const stockQuantity = cartItem.ProductVariant
+      ? cartItem.ProductVariant.stockQuantity
+      : cartItem.Product.stockQuantity;
+
+    // Kiểm tra nếu số lượng yêu cầu vượt quá tồn kho
+    if (stockQuantity < quantity) {
       throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
     }
 
-    // Update quantity
+    // Cập nhật số lượng
     await cartItem.update({ quantity });
 
-    // Return updated cart
+    // Trả về giỏ hàng đã cập nhật
     return getCart(req, res, next);
   } catch (error) {
     next(error);
   }
 };
 
-// Remove item from cart
+/**
+ * Xóa sản phẩm khỏi giỏ hàng
+ */
 const removeCartItem = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Find cart item
+    // Tìm mục giỏ hàng
     const cartItem = await CartItem.findByPk(id, {
       include: [
         {
@@ -411,35 +400,40 @@ const removeCartItem = async (req, res, next) => {
       throw new AppError('Không tìm thấy sản phẩm trong giỏ hàng', 404);
     }
 
-    // Check cart ownership
+    // Kiểm tra quyền sở hữu giỏ hàng
     if (req.user) {
+      // Case người dùng đã đăng nhập
       if (cartItem.Cart.userId !== req.user.id) {
         throw new AppError('Bạn không có quyền truy cập giỏ hàng này', 403);
       }
     } else {
+      // Case người dùng chưa đăng nhập
       const { sessionId } = req.cookies;
       if (!sessionId || cartItem.Cart.sessionId !== sessionId) {
         throw new AppError('Bạn không có quyền truy cập giỏ hàng này', 403);
       }
     }
 
-    // Delete cart item
+    // Xóa mục giỏ hàng
     await cartItem.destroy();
 
-    // Return updated cart
+    // Trả về giỏ hàng đã cập nhật
     return getCart(req, res, next);
   } catch (error) {
     next(error);
   }
 };
 
-// Clear cart
+/**
+ * Xóa tất cả sản phẩm trong giỏ hàng
+ */
 const clearCart = async (req, res, next) => {
   try {
     let cartId;
 
     if (req.user) {
-      // Logged in user
+      // Case người dùng đã đăng nhập
+      // Lấy giỏ hàng của người dùng
       const cart = await Cart.findOne({
         where: {
           userId: req.user.id,
@@ -447,6 +441,7 @@ const clearCart = async (req, res, next) => {
         },
       });
 
+      // Nếu không có giỏ hàng, trả về thông báo giỏ hàng trống
       if (!cart) {
         return res.status(200).json({
           status: 'success',
@@ -454,11 +449,13 @@ const clearCart = async (req, res, next) => {
         });
       }
 
+      // Lấy cartId
       cartId = cart.id;
     } else {
-      // Guest user
+      // Case người dùng chưa đăng nhập
       const { sessionId } = req.cookies;
 
+      // Nếu không có sessionId, trả về thông báo giỏ hàng trống
       if (!sessionId) {
         return res.status(200).json({
           status: 'success',
@@ -466,6 +463,7 @@ const clearCart = async (req, res, next) => {
         });
       }
 
+      // Lấy giỏ hàng theo sessionId
       const cart = await Cart.findOne({
         where: {
           sessionId,
@@ -473,6 +471,7 @@ const clearCart = async (req, res, next) => {
         },
       });
 
+      // Nếu không có giỏ hàng, trả về thông báo giỏ hàng trống
       if (!cart) {
         return res.status(200).json({
           status: 'success',
@@ -480,10 +479,11 @@ const clearCart = async (req, res, next) => {
         });
       }
 
+      // Lấy cartId
       cartId = cart.id;
     }
 
-    // Delete all cart items
+    // Xóa tất cả mục giỏ hàng
     await CartItem.destroy({
       where: { cartId },
     });
@@ -503,13 +503,16 @@ const clearCart = async (req, res, next) => {
   }
 };
 
-// Get cart count
+/**
+ * Lấy số lượng sản phẩm trong giỏ hàng
+ */
 const getCartCount = async (req, res, next) => {
   try {
     let cart;
 
     if (req.user) {
-      // Logged in user
+      // Case người dùng đã đăng nhập
+      // Lấy giỏ hàng của người dùng
       cart = await Cart.findOne({
         where: {
           userId: req.user.id,
@@ -517,9 +520,10 @@ const getCartCount = async (req, res, next) => {
         },
       });
     } else {
-      // Guest user
+      // Case người dùng chưa đăng nhập
       const { sessionId } = req.cookies;
 
+      // Nếu không có sessionId, trả về count = 0
       if (!sessionId) {
         return res.status(200).json({
           status: 'success',
@@ -529,6 +533,7 @@ const getCartCount = async (req, res, next) => {
         });
       }
 
+      // Lấy giỏ hàng theo sessionId
       cart = await Cart.findOne({
         where: {
           sessionId,
@@ -537,6 +542,7 @@ const getCartCount = async (req, res, next) => {
       });
     }
 
+    // Nếu không có giỏ hàng, trả về count = 0
     if (!cart) {
       return res.status(200).json({
         status: 'success',
@@ -546,7 +552,7 @@ const getCartCount = async (req, res, next) => {
       });
     }
 
-    // Count items
+    // Tính tổng số lượng sản phẩm trong giỏ hàng
     const count = await CartItem.sum('quantity', {
       where: { cartId: cart.id },
     });
@@ -562,18 +568,22 @@ const getCartCount = async (req, res, next) => {
   }
 };
 
-// Sync cart from local storage to server
+/**
+ * Sync giỏ hàng từ local storage lên server
+ */
 const syncCart = async (req, res, next) => {
   const transaction = await sequelize.transaction();
 
   try {
+    // Lấy dữ liệu giỏ hàng từ request body
     const { items } = req.body;
 
+    // Kiểm tra người dùng đã đăng nhập chưa
     if (!req.user) {
       throw new AppError('Bạn cần đăng nhập để đồng bộ giỏ hàng', 401);
     }
 
-    // Get or create user cart
+    // Lấy hoặc tạo giỏ hàng cho người dùng
     const [cart] = await Cart.findOrCreate({
       where: {
         userId: req.user.id,
@@ -585,35 +595,41 @@ const syncCart = async (req, res, next) => {
       transaction,
     });
 
-    // Clear current cart
+    // Xóa tất cả mục giỏ hàng hiện tại
     await CartItem.destroy({
       where: { cartId: cart.id },
       transaction,
     });
 
-    // Add items from request
+    // Thêm từng mục từ local storage vào giỏ hàng
     for (const item of items) {
       const { productId, variantId, quantity } = item;
 
-      // Validate product
       const product = await Product.findByPk(productId);
+
+      // Kiểm tra sản phẩm có tồn tại và còn hàng không
+      // Nếu không, bỏ qua mục này
       if (!product || !product.inStock) {
-        continue; // Skip invalid products
+        continue;
       }
 
-      // Validate variant if provided
       if (variantId) {
+        // Case sản phẩm có biến thể
+
+        // Kiểm tra biến thể có tồn tại không
         const variant = await ProductVariant.findOne({
           where: { id: variantId, productId },
         });
 
+        // Nếu biến thể không tồn tại, bỏ qua mục này
         if (!variant) {
-          continue; // Skip invalid variants
+          continue;
         }
 
-        // Check stock and add to cart
+        // Lấy số lượng thực tế có thể thêm vào giỏ hàng dựa trên MIN của số lượng yêu cầu và tồn kho
         const actualQuantity = Math.min(quantity, variant.stockQuantity);
         if (actualQuantity > 0) {
+          // Thêm mục vào giỏ hàng
           await CartItem.create(
             {
               cartId: cart.id,
@@ -626,9 +642,10 @@ const syncCart = async (req, res, next) => {
           );
         }
       } else {
-        // Check stock and add to cart
+        // Lấy số lượng thực tế có thể thêm vào giỏ hàng dựa trên MIN của số lượng yêu cầu và tồn kho
         const actualQuantity = Math.min(quantity, product.stockQuantity);
         if (actualQuantity > 0) {
+          // Thêm mục vào giỏ hàng
           await CartItem.create(
             {
               cartId: cart.id,
@@ -644,7 +661,7 @@ const syncCart = async (req, res, next) => {
 
     await transaction.commit();
 
-    // Return updated cart
+    // Trả về giỏ hàng đã cập nhật
     return getCart(req, res, next);
   } catch (error) {
     await transaction.rollback();
@@ -652,22 +669,25 @@ const syncCart = async (req, res, next) => {
   }
 };
 
-// Merge guest cart with user cart (called when user logs in)
+/**
+ * Gộp giỏ hàng của guest vào giỏ hàng người dùng (khi người dùng đăng nhập)
+ */
 const mergeCart = async (req, res, next) => {
   const transaction = await sequelize.transaction();
 
   try {
+    // Kiểm tra người dùng đã đăng nhập chưa
     if (!req.user) {
       throw new AppError('Bạn cần đăng nhập để thực hiện chức năng này', 401);
     }
 
     const { sessionId } = req.cookies;
     if (!sessionId) {
-      // No session cart to merge, just return user cart
+      // Nếu không có sessionId, trả về giỏ hàng người dùng
       return getCart(req, res, next);
     }
 
-    // Find session cart
+    // Lấy giỏ hàng theo sessionId
     const sessionCart = await Cart.findOne({
       where: {
         sessionId,
@@ -676,11 +696,11 @@ const mergeCart = async (req, res, next) => {
     });
 
     if (!sessionCart) {
-      // No session cart to merge, just return user cart
+      // Nếu không có giỏ hàng theo sessionId, trả về giỏ hàng người dùng
       return getCart(req, res, next);
     }
 
-    // Get or create user cart
+    // Lấy hoặc tạo giỏ hàng cho người dùng
     const [userCart] = await Cart.findOrCreate({
       where: {
         userId: req.user.id,
@@ -692,7 +712,7 @@ const mergeCart = async (req, res, next) => {
       transaction,
     });
 
-    // Get session cart items
+    // Lấy các mục giỏ hàng của session
     const sessionItems = await CartItem.findAll({
       where: { cartId: sessionCart.id },
       include: [
@@ -708,9 +728,9 @@ const mergeCart = async (req, res, next) => {
       transaction,
     });
 
-    // Merge each session item with user cart
+    // Gộp từng mục giỏ hàng của session vào giỏ hàng người dùng
     for (const sessionItem of sessionItems) {
-      // Check if item already exists in user cart
+      // Kiểm tra mục giỏ hàng đã tồn tại trong giỏ hàng người dùng chưa
       const existingUserItem = await CartItem.findOne({
         where: {
           cartId: userCart.id,
@@ -721,36 +741,54 @@ const mergeCart = async (req, res, next) => {
       });
 
       if (existingUserItem) {
-        // Merge quantities
+        // Case mục đã tồn tại trong giỏ hàng người dùng
+
+        // Tính số lượng mới sau khi gộp
         const newQuantity = existingUserItem.quantity + sessionItem.quantity;
+
+        // Lấy tồn kho tối đa
         const maxStock = sessionItem.ProductVariant
           ? sessionItem.ProductVariant.stockQuantity
           : sessionItem.Product.stockQuantity;
 
+        // Lấy số lượng thực tế có thể thêm vào giỏ hàng dựa trên MIN của số lượng yêu cầu và tồn kho
         const finalQuantity = Math.min(newQuantity, maxStock);
 
+        // Cập nhật số lượng mục giỏ hàng của người dùng
         await existingUserItem.update(
           { quantity: finalQuantity },
           { transaction },
         );
 
-        // Delete the session item after merging
+        // Sau khi gộp, xóa mục giỏ hàng của session
         await sessionItem.destroy({ transaction });
       } else {
-        // Move item to user cart
-        await sessionItem.update({ cartId: userCart.id }, { transaction });
+        // Case mục chưa tồn tại trong giỏ hàng người dùng
+
+        // Lấy tồn kho tối đa
+        const maxStock = sessionItem.ProductVariant
+          ? sessionItem.ProductVariant.stockQuantity
+          : sessionItem.Product.stockQuantity;
+
+        // Lấy số lượng thực tế có thể thêm vào giỏ hàng dựa trên MIN của số lượng yêu cầu và tồn kho
+        const finalQuantity = Math.min(sessionItem.quantity, maxStock);
+
+        await sessionItem.update(
+          { cartId: userCart.id, quantity: finalQuantity },
+          { transaction },
+        );
       }
     }
 
-    // Mark session cart as merged
+    // Đánh dấu giỏ hàng session là đã được gộp (merged)
     await sessionCart.update({ status: 'merged' }, { transaction });
 
     await transaction.commit();
 
-    // Clear session cookie to prevent duplicate merging
+    // Xóa cookie sessionId để tránh việc gộp trùng lặp
     res.clearCookie('sessionId');
 
-    // Return updated user cart
+    // Trả về giỏ hàng đã cập nhật
     return getCart(req, res, next);
   } catch (error) {
     await transaction.rollback();

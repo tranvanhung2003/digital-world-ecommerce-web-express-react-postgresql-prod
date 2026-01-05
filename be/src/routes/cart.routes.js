@@ -273,7 +273,7 @@ router.post('/merge', cartController.mergeCart);
 router.put(
   '/items/:id',
   validateRequest(updateCartItemSchema),
-  cartController.updateCartItem
+  cartController.updateCartItem,
 );
 
 /**

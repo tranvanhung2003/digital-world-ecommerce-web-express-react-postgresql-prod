@@ -139,6 +139,9 @@ npm start
 - `PUT /api/cart/items/:id` - Cập nhật số lượng sản phẩm
 - `DELETE /api/cart/items/:id` - Xóa sản phẩm khỏi giỏ hàng
 - `DELETE /api/cart` - Xóa tất cả sản phẩm trong giỏ hàng
+- `GET /api/cart/count` - Lấy số lượng sản phẩm trong giỏ hàng
+- `POST /api/cart/sync` - Sync giỏ hàng từ local storage lên server
+- `POST /api/cart/merge` - Gộp giỏ hàng của guest vào giỏ hàng người dùng (khi người dùng đăng nhập)
 
 ### Orders
 
