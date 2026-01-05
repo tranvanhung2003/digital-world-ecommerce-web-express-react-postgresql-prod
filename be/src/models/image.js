@@ -85,7 +85,6 @@ const Image = sequelize.define(
   {
     tableName: 'images',
     timestamps: true,
-    underscored: true,
     indexes: [
       {
         fields: ['product_id'],
@@ -100,7 +99,7 @@ const Image = sequelize.define(
         fields: ['is_active'],
       },
     ],
-  }
+  },
 );
 
 module.exports = Image;
