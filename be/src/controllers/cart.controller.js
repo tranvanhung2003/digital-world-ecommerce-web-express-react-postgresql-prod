@@ -9,13 +9,15 @@ const {
 const { AppError } = require('../middlewares/errorHandler');
 const { v4: uuidv4 } = require('uuid');
 
-// Get cart
+/**
+ * Lấy giỏ hàng
+ */
 const getCart = async (req, res, next) => {
   try {
     let cart;
 
     if (req.user) {
-      // Logged in user - get or create cart
+      // User đã đăng nhập - lấy hoặc tạo giỏ hàng
       [cart] = await Cart.findOrCreate({
         where: {
           userId: req.user.id,
@@ -26,9 +28,10 @@ const getCart = async (req, res, next) => {
         },
       });
     } else {
-      // Guest user - get or create cart by session ID
+      // Người dùng chưa đăng nhập - lấy hoặc tạo giỏ hàng theo session ID
       const { sessionId } = req.cookies;
 
+      // Nếu không có sessionId, trả về giỏ hàng trống
       if (!sessionId) {
         return res.status(200).json({
           status: 'success',
@@ -41,6 +44,7 @@ const getCart = async (req, res, next) => {
         });
       }
 
+      // Lấy hoặc tạo giỏ hàng theo sessionId
       [cart] = await Cart.findOrCreate({
         where: {
           sessionId,
@@ -52,7 +56,7 @@ const getCart = async (req, res, next) => {
       });
     }
 
-    // Get cart items with product details
+    // Lấy các mục giỏ hàng kèm theo chi tiết sản phẩm
     const cartItems = await CartItem.findAll({
       where: { cartId: cart.id },
       include: [
@@ -75,14 +79,16 @@ const getCart = async (req, res, next) => {
       ],
     });
 
-    // Get warranty packages for cart items that have them
+    // Lấy các mục giỏ hàng kèm theo gói bảo hành
     const cartItemsWithWarranties = await Promise.all(
       cartItems.map(async (item) => {
         const itemData = item.toJSON();
+
         if (
           itemData.warrantyPackageIds &&
           itemData.warrantyPackageIds.length > 0
         ) {
+          // Lấy chi tiết gói bảo hành
           const warranties = await WarrantyPackage.findAll({
             where: {
               id: itemData.warrantyPackageIds,
@@ -90,22 +96,30 @@ const getCart = async (req, res, next) => {
             },
             attributes: ['id', 'name', 'price', 'durationMonths'],
           });
+
+          // Đính kèm gói bảo hành vào mục giỏ hàng
           itemData.warrantyPackages = warranties;
         } else {
+          // Nếu không có gói bảo hành, đặt mảng rỗng
           itemData.warrantyPackages = [];
         }
+
+        // Trả về mục giỏ hàng đã đính kèm gói bảo hành
         return itemData;
       }),
     );
 
-    // Calculate totals
+    // Tính tổng số lượng tât cả các mục trong giỏ hàng
     const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+    // Tính tổng tiền tất cả các mục trong giỏ hàng
     const subtotal = cartItemsWithWarranties.reduce((sum, item) => {
+      // Nếu sản phẩm có biến thể, dùng giá biến thể, nếu không thì dùng giá sản phẩm
       const price = item.ProductVariant
         ? item.ProductVariant.price
         : item.Product.price;
 
-      // Calculate warranty price
+      // Nếu có gói bảo hành, cộng giá gói bảo hành vào
       const warrantyPrice = item.warrantyPackages
         ? item.warrantyPackages.reduce(
             (warrantySum, warranty) => warrantySum + parseFloat(warranty.price),
@@ -113,7 +127,8 @@ const getCart = async (req, res, next) => {
           )
         : 0;
 
-      return sum + price * item.quantity + warrantyPrice * item.quantity;
+      // Tổng tiền mỗi mục = (giá sản phẩm + giá gói bảo hành) * số lượng
+      return sum + (parseFloat(price) + warrantyPrice) * item.quantity;
     }, 0);
 
     res.status(200).json({
@@ -121,8 +136,8 @@ const getCart = async (req, res, next) => {
       data: {
         id: cart.id,
         items: cartItemsWithWarranties,
-        totalItems,
-        subtotal,
+        totalItems, // Tổng số lượng tât cả các mục trong giỏ hàng
+        subtotal, // Tổng tiền tất cả các mục trong giỏ hàng
       },
     });
   } catch (error) {
@@ -130,11 +145,14 @@ const getCart = async (req, res, next) => {
   }
 };
 
-// Add item to cart
+/**
+ * Thêm sản phẩm vào giỏ hàng
+ */
 const addToCart = async (req, res, next) => {
   const transaction = await sequelize.transaction();
 
   try {
+    // Lấy dữ liệu từ request body
     const {
       productId,
       variantId,
@@ -142,36 +160,45 @@ const addToCart = async (req, res, next) => {
       warrantyPackageIds = [],
     } = req.body;
 
-    // Validate product
     const product = await Product.findByPk(productId);
+
+    // Kiểm tra sản phẩm có tồn tại không
     if (!product) {
       throw new AppError('Sản phẩm không tồn tại', 404);
     }
 
+    // Kiểm tra sản phẩm còn hàng không
     if (!product.inStock) {
       throw new AppError('Sản phẩm đã hết hàng', 400);
     }
 
-    // Validate variant if provided
     let variant = null;
+
     if (variantId) {
+      // Trường hợp có biến thể
+      // Kiểm tra biến thể có tồn tại không
       variant = await ProductVariant.findOne({
         where: { id: variantId, productId },
       });
 
+      // Nếu biến thể không tồn tại, báo lỗi
       if (!variant) {
         throw new AppError('Biến thể sản phẩm không tồn tại', 404);
       }
 
+      // Kiểm tra biến thể còn hàng không, nếu không thì báo lỗi
       if (variant.stockQuantity < quantity) {
         throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
       }
     } else if (product.stockQuantity < quantity) {
+      // Trường hợp không có biến thể
+      // Kiểm tra sản phẩm còn hàng không, nếu không thì báo lỗi
       throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
     }
 
-    // Validate warranty packages if provided
     let validWarrantyPackageIds = [];
+
+    // Validate các gói bảo hành nếu được cung cấp
     if (warrantyPackageIds && warrantyPackageIds.length > 0) {
       const warranties = await WarrantyPackage.findAll({
         where: {
@@ -180,18 +207,20 @@ const addToCart = async (req, res, next) => {
         },
       });
 
+      // Nếu có gói bảo hành không hợp lệ, báo lỗi
       if (warranties.length !== warrantyPackageIds.length) {
         throw new AppError('Một hoặc nhiều gói bảo hành không hợp lệ', 400);
       }
 
+      // Lấy danh sách ID của các gói bảo hành hợp lệ
       validWarrantyPackageIds = warranties.map((w) => w.id);
     }
 
-    // Get or create cart
+    // Lấy hoặc tạo giỏ hàng
     let cart;
 
     if (req.user) {
-      // Logged in user
+      // Người dùng đã đăng nhập
       [cart] = await Cart.findOrCreate({
         where: {
           userId: req.user.id,
@@ -202,15 +231,18 @@ const addToCart = async (req, res, next) => {
         },
         transaction,
       });
-
-      // Note: Cart merging is now handled by dedicated /merge endpoint
-      // when user logs in, not during addToCart to avoid duplicates
     } else {
-      // Guest user
+      // Việc hợp nhất giỏ hàng hiện được xử lý bởi endpoint /merge khi người dùng đăng nhập
+      // Không phải trong lúc addToCart để tránh trùng lặp
+
+      // Người dùng chưa đăng nhập
       let { sessionId } = req.cookies;
 
+      // Nếu không có sessionId, tạo mới và set cookie cho người dùng
       if (!sessionId) {
         sessionId = uuidv4();
+
+        // Set cookie với sessionId
         res.cookie('sessionId', sessionId, {
           httpOnly: true,
           maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
@@ -230,7 +262,7 @@ const addToCart = async (req, res, next) => {
       });
     }
 
-    // Check if item already exists in cart (including same warranty packages)
+    // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa (bao gồm các gói bảo hành tương tự)
     let cartItem = await CartItem.findOne({
       where: {
         cartId: cart.id,
@@ -242,21 +274,42 @@ const addToCart = async (req, res, next) => {
     });
 
     if (cartItem) {
-      // Update quantity
+      // Trường hợp sản phẩm đã có trong giỏ hàng
+      // Cập nhật số lượng mới
       const newQuantity = cartItem.quantity + quantity;
 
-      // Check stock
+      // Kiểm tra có phải sản phẩm có biến thể hay không
       if (variantId) {
+        // Nếu là sản phẩm có biến thể, kiểm tra số lượng tồn kho của biến thể
+        // Nếu vượt quá tồn kho, báo lỗi
         if (variant.stockQuantity < newQuantity) {
           throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
         }
       } else if (product.stockQuantity < newQuantity) {
+        // Nếu là sản phẩm không có biến thể, kiểm tra số lượng tồn kho của sản phẩm
+        // Nếu vượt quá tồn kho, báo lỗi
         throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
       }
 
+      // Cập nhật số lượng mới
       await cartItem.update({ quantity: newQuantity }, { transaction });
     } else {
-      // Create new cart item
+      // Trường hợp sản phẩm chưa có trong giỏ hàng
+
+      // Kiểm tra có phải sản phẩm có biến thể hay không
+      if (variantId) {
+        // Nếu là sản phẩm có biến thể, kiểm tra số lượng tồn kho của biến thể
+        // Nếu vượt quá tồn kho, báo lỗi
+        if (variant.stockQuantity < quantity) {
+          throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
+        }
+      } else if (product.stockQuantity < quantity) {
+        // Nếu là sản phẩm không có biến thể, kiểm tra số lượng tồn kho của sản phẩm
+        // Nếu vượt quá tồn kho, báo lỗi
+        throw new AppError('Số lượng vượt quá số lượng tồn kho', 400);
+      }
+
+      // Tạo mục giỏ hàng mới
       cartItem = await CartItem.create(
         {
           cartId: cart.id,
@@ -272,7 +325,7 @@ const addToCart = async (req, res, next) => {
 
     await transaction.commit();
 
-    // Return updated cart
+    // Trả về giỏ hàng đã cập nhật
     return getCart(req, res, next);
   } catch (error) {
     await transaction.rollback();
