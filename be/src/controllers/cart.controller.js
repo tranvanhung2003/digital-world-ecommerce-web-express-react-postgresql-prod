@@ -95,7 +95,7 @@ const getCart = async (req, res, next) => {
           itemData.warrantyPackages = [];
         }
         return itemData;
-      })
+      }),
     );
 
     // Calculate totals
@@ -109,7 +109,7 @@ const getCart = async (req, res, next) => {
       const warrantyPrice = item.warrantyPackages
         ? item.warrantyPackages.reduce(
             (warrantySum, warranty) => warrantySum + parseFloat(warranty.price),
-            0
+            0,
           )
         : 0;
 
@@ -266,7 +266,7 @@ const addToCart = async (req, res, next) => {
           price: variantId ? variant.price : product.price,
           warrantyPackageIds: validWarrantyPackageIds,
         },
-        { transaction }
+        { transaction },
       );
     }
 
@@ -569,7 +569,7 @@ const syncCart = async (req, res, next) => {
               quantity: actualQuantity,
               price: variant.price,
             },
-            { transaction }
+            { transaction },
           );
         }
       } else {
@@ -583,7 +583,7 @@ const syncCart = async (req, res, next) => {
               quantity: actualQuantity,
               price: product.price,
             },
-            { transaction }
+            { transaction },
           );
         }
       }
@@ -678,7 +678,7 @@ const mergeCart = async (req, res, next) => {
 
         await existingUserItem.update(
           { quantity: finalQuantity },
-          { transaction }
+          { transaction },
         );
 
         // Delete the session item after merging
