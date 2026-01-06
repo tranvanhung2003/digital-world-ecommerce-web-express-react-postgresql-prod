@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 
 async function seed() {
   try {
-    const adminData = {
+    const adminUserData = {
       id: uuidv4(),
       email: 'admin@gmail.com',
       password: 'Admin2003.',
@@ -16,24 +16,24 @@ async function seed() {
 
     // Kiểm tra xem tài khoản admin đã tồn tại chưa
     const existingAdmin = await User.findOne({
-      where: { email: adminData.email },
+      where: { email: adminUserData.email },
     });
 
     if (existingAdmin) {
       console.log('Tài khoản admin đã tồn tại');
-      console.log(`Email: ${adminData.email}`);
+      console.log(`Email: ${adminUserData.email}`);
       console.log('Mật khẩu: (giữ nguyên mật khẩu hiện tại)');
       process.exit(0);
     }
 
     // Tạo tài khoản admin mới
     await User.create({
-      ...adminData,
+      ...adminUserData,
     });
 
     console.log('Tạo tài khoản admin thành công');
-    console.log(`Email: ${adminData.email}`);
-    console.log(`Mật khẩu: ${adminData.password}`);
+    console.log(`Email: ${adminUserData.email}`);
+    console.log(`Mật khẩu: ${adminUserData.password}`);
     process.exit(0);
   } catch (error) {
     console.error('Lỗi khi tạo tài khoản admin:', error);

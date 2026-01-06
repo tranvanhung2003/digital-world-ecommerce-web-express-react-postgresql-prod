@@ -28,7 +28,7 @@ function getSpecificationCategory(specName) {
   // Chuyển tên thông số kỹ thuật thành chữ thường để so sánh
   const lowerSpecName = specName.toLowerCase();
 
-  // Duyệt qua các danh mục và từ khóa để xác định danh mục phù hợp
+  // Duyệt qua các danh mục và từ khóa để tìm danh mục phù hợp
   for (const [category, keywords] of Object.entries(categories)) {
     if (keywords.some((keyword) => lowerSpecName.includes(keyword))) {
       return category;
@@ -39,7 +39,7 @@ function getSpecificationCategory(specName) {
   return 'Thông số chung';
 }
 
-const DEFAULT_FAQS = [
+const SEED_FAQS = [
   {
     question:
       'Chính sách bảo hành khi mua sản phẩm này tại cửa hàng như thế nào?',
@@ -73,7 +73,67 @@ const DEFAULT_FAQS = [
   },
 ];
 
-const sampleProducts = [
+const SEED_CATEGORIES = [
+  { name: 'Laptop', slug: 'laptop', description: 'Máy tính xách tay' },
+  {
+    name: 'Điện thoại',
+    slug: 'dien-thoai',
+    description: 'Điện thoại thông minh, smartphone mới nhất',
+  },
+  {
+    name: 'Máy tính bảng',
+    slug: 'may-tinh-bang',
+    description: 'iPad và các dòng tablet Android',
+  },
+  {
+    name: 'Đồng hồ thông minh',
+    slug: 'dong-ho-thong-minh',
+    description: 'Smartwatch theo dõi sức khỏe và thể thao',
+  },
+  {
+    name: 'Âm thanh',
+    slug: 'am-thanh',
+    description: 'Loa Bluetooth, tai nghe không dây, dàn âm thanh',
+  },
+  {
+    name: 'Máy ảnh',
+    slug: 'may-anh',
+    description: 'Máy ảnh DSLR, Mirrorless và phụ kiện nhiếp ảnh',
+  },
+  {
+    name: 'Linh kiện máy tính',
+    slug: 'linh-kien-may-tinh',
+    description: 'CPU, RAM, Card đồ họa, Bo mạch chủ',
+  },
+  {
+    name: 'Màn hình',
+    slug: 'man-hinh',
+    description: 'Màn hình máy tính đồ họa và gaming',
+  },
+  {
+    name: 'Phụ kiện',
+    slug: 'phu-kien',
+    description: 'Chuột, bàn phím, cáp sạc, bao da, ốp lưng',
+  },
+  {
+    name: 'Thiết bị lưu trữ',
+    slug: 'thiet-bi-luu-tru',
+    description: 'Ổ cứng SSD, HDD, USB, thẻ nhớ',
+  },
+  {
+    name: 'Thiết bị mạng',
+    slug: 'thiet-bi-mang',
+    description: 'Router Wifi, bộ kích sóng, Switch',
+  },
+  {
+    name: 'Điện tử gia dụng',
+    slug: 'dien-tu-gia-dung',
+    description: 'Máy lọc không khí, máy pha cà phê',
+  },
+  { name: 'Điện tử', slug: 'dien-tu', description: 'Thiết bị điện tử' },
+];
+
+const SEED_PRODUCTS = [
   // === LENOVO THINKPAD P16 GEN 1 ===
   {
     name: 'Lenovo ThinkPad P16 Gen 1',
@@ -1160,37 +1220,11 @@ async function seed() {
     console.log('Đã xóa tất cả dữ liệu cũ');
 
     // Tạo categories
-    const categories = [
-      {
-        name: 'Thời trang nữ',
-        slug: 'thoi-trang-nu',
-        description: 'Thời trang dành cho phụ nữ',
-      },
-      {
-        name: 'Thời trang nam',
-        slug: 'thoi-trang-nam',
-        description: 'Thời trang dành cho nam giới',
-      },
-      { name: 'Laptop', slug: 'laptop', description: 'Máy tính xách tay' },
-      { name: 'Ô tô', slug: 'o-to', description: 'Xe hơi các loại' },
-      {
-        name: 'Điện thoại',
-        slug: 'dien-thoai',
-        description: 'Điện thoại thông minh',
-      },
-      {
-        name: 'Giày dép',
-        slug: 'giay-dep',
-        description: 'Giày dép thời trang',
-      },
-      { name: 'Điện tử', slug: 'dien-tu', description: 'Thiết bị điện tử' },
-    ];
-
-    const createdCategories = await Category.bulkCreate(categories);
-    console.log(`📁 Đã tạo ${createdCategories.length} danh mục`);
+    const createdCategories = await Category.bulkCreate(SEED_CATEGORIES);
+    console.log(`Đã tạo ${createdCategories.length} danh mục.`);
 
     // Tạo products với attributes và variants
-    for (const productData of sampleProducts) {
+    for (const productData of SEED_PRODUCTS) {
       // Tìm category
       const category = createdCategories.find(
         (cat) => cat.name === productData.category,
@@ -1206,7 +1240,7 @@ async function seed() {
         images: productData.images,
         thumbnail: productData.thumbnail,
         inStock: true,
-        stockQuantity: 0, // Sẽ được tính từ variants
+        stockQuantity: 0, // Sẽ cập nhật sau khi tạo variants
         sku: `SKU-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         status: productData.status,
         featured: productData.featured,
@@ -1218,7 +1252,7 @@ async function seed() {
         condition: productData.condition || 'new',
         baseName: productData.name,
         isVariantProduct: true,
-        faqs: DEFAULT_FAQS,
+        faqs: SEED_FAQS,
       });
 
       // Gán category
@@ -1230,6 +1264,7 @@ async function seed() {
       const createdSpecifications = [];
       if (productData.specifications) {
         let sortOrder = 0;
+
         for (const [specName, specValue] of Object.entries(
           productData.specifications,
         )) {
@@ -1240,6 +1275,7 @@ async function seed() {
             category: getSpecificationCategory(specName),
             sortOrder: sortOrder++,
           });
+
           createdSpecifications.push(specification);
         }
       }
@@ -1252,12 +1288,15 @@ async function seed() {
           name: attr.name,
           values: attr.values,
         });
+
         createdAttributes.push(attribute);
       }
 
       // Tạo variants
       const createdVariants = [];
       for (const variant of productData.variants) {
+        // Tạo SKU cho variant: gốc-sku + các giá trị attribute nối với nhau
+        // Các giá trị attribute được viết liền không dấu, in hoa, nối với nhau bằng dấu '-'
         const variantSku = `${product.sku}-${Object.values(variant.attributes).join('-').toUpperCase().replace(/\s+/g, '')}`;
 
         const productVariant = await ProductVariant.create({
@@ -1274,10 +1313,11 @@ async function seed() {
           compareAtPrice: variant.compareAtPrice || null,
           specifications: variant.specifications || {},
         });
+
         createdVariants.push(productVariant);
       }
 
-      // Cập nhật tổng stock cho product
+      // Cập nhật lại stockQuantity và inStock cho product
       const totalStock = createdVariants.reduce(
         (sum, variant) => sum + variant.stockQuantity,
         0,
@@ -1288,16 +1328,15 @@ async function seed() {
       });
 
       console.log(
-        `✅ Đã tạo sản phẩm: ${product.name} (${createdSpecifications.length} specs, ${createdAttributes.length} attributes, ${createdVariants.length} variants, ${totalStock} stock)`,
+        `Đã tạo sản phẩm: ${product.name} (${createdSpecifications.length} specifications, ${createdAttributes.length} attributes, ${createdVariants.length} variants, ${totalStock} stock)`,
       );
     }
 
     console.log('Seed products thành công.');
-    console.log(`📊 Tổng kết:`);
-    console.log(`   - ${sampleProducts.length} sản phẩm`);
-    console.log(`   - ${createdCategories.length} danh mục`);
+    console.log(`Đã tạo ${createdCategories.length} danh mục`);
+    console.log(`Đã tạo ${SEED_PRODUCTS.length} sản phẩm`);
     console.log(
-      `   - Tổng variants: ${sampleProducts.reduce((sum, p) => sum + p.variants.length, 0)}`,
+      `Đã tạo tổng cộng ${SEED_PRODUCTS.reduce((sum, p) => sum + p.variants.length, 0)} biến thể sản phẩm`,
     );
 
     process.exit(0);
