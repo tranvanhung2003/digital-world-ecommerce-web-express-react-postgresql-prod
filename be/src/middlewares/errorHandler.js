@@ -98,8 +98,6 @@ const handleSequelizeUniqueConstraintError = (err) => {
   return new AppError(message, 400);
 };
 
-// Main error handler middleware
-
 /**
  * Middleware xử lý lỗi toàn cục
  */

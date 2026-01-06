@@ -4,7 +4,7 @@ const { AppError } = require('./errorHandler');
 
 /**
  * Middleware xác thực dành riêng cho admin
- * Kiểm tra token, user tồn tại và có quyền admin/manager
+ * Chỉ admin và manager mới có thể truy cập Admin Panel
  */
 const adminAuthenticate = async (req, res, next) => {
   try {
@@ -61,7 +61,7 @@ const adminAuthenticate = async (req, res, next) => {
       return next(new AppError('Token không hợp lệ hoặc đã hết hạn', 401));
     }
 
-    // Chuyển lỗi cho middleware xử lý lỗi tiếp theo
+    // Nếu lỗi khác, chuyển tiếp lỗi
     next(error);
   }
 };

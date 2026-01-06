@@ -1,7 +1,7 @@
 const rateLimit = require('express-rate-limit');
 
 /**
- * General API giới hạn tốc độ request từ cùng một địa chỉ IP
+ * Giới hạn tốc độ request từ cùng một địa chỉ IP
  */
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 phút

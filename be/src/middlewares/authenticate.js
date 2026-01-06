@@ -3,13 +3,15 @@ const { User } = require('../models');
 const { AppError } = require('./errorHandler');
 
 /**
- * Middleware để xác thực người dùng thông thường
+ * Middleware để xác thực người dùng
  */
 const authenticate = async (req, res, next) => {
   try {
     // Lấy token từ header 'Authorization'
     // Định dạng: Bearer <token>
     const authHeader = req.headers.authorization;
+
+    // Kiểm tra sự tồn tại của token và định dạng đúng (Bearer <token>)
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return next(new AppError('Vui lòng đăng nhập để tiếp tục', 401));
     }
@@ -28,7 +30,7 @@ const authenticate = async (req, res, next) => {
       return next(new AppError('Người dùng không tồn tại', 401));
     }
 
-    // Kiểm tra xem user có đang hoạt động không
+    // Kiểm tra xem user có bị khóa không
     if (!user.isActive) {
       return next(
         new AppError(
@@ -60,13 +62,13 @@ const authenticate = async (req, res, next) => {
       );
     }
 
-    // Chuyển lỗi cho middleware xử lý lỗi tiếp theo
+    // Nếu lỗi khác, chuyển tiếp lỗi
     next(error);
   }
 };
 
 /**
- * Middleware để xác thực người dùng thông thường optionally (cho chức năng giỏ hàng)
+ * Middleware để xác thực người dùng và guest (khách vãng lai) cho chức năng giỏ hàng
  */
 const optionalAuthenticate = async (req, res, next) => {
   try {
@@ -76,7 +78,8 @@ const optionalAuthenticate = async (req, res, next) => {
 
     // Kiểm tra sự tồn tại của token và định dạng đúng (Bearer <token>)
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return next(); // Tiếp tục mà không cần xác thực nếu không có token
+      // Nếu không có token, tiếp tục với tư cách guest (khách vãng lai)
+      return next();
     }
 
     // Trích xuất token
@@ -90,11 +93,12 @@ const optionalAuthenticate = async (req, res, next) => {
 
     // Kiểm tra sự tồn tại của user
     if (!user) {
-      return next(); // Nếu user không tồn tại, thì tiếp tục với tư cách guest (khách vãng lai)
+      // Nếu user không tồn tại, tiếp tục với tư cách guest (khách vãng lai)
+      return next();
     }
 
-    // Kiểm tra xem user có đang hoạt động không
-    // Nếu không, trả về lỗi thay vì tiếp tục với tư cách guest (khách vãng lai)
+    // Kiểm tra xem user có bị khóa không
+    // Nếu có, trả về lỗi thay vì tiếp tục với tư cách guest (khách vãng lai)
     if (!user.isActive) {
       return next(
         new AppError(
@@ -125,7 +129,7 @@ const optionalAuthenticate = async (req, res, next) => {
       return next();
     }
 
-    // Chuyển lỗi cho middleware xử lý lỗi tiếp theo
+    // Nếu lỗi khác, chuyển tiếp lỗi
     next(error);
   }
 };

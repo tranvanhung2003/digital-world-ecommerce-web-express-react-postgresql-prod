@@ -1,7 +1,5 @@
 const { AppError } = require('./errorHandler');
 
-// Middleware to authorize users based on role
-
 /**
  * Middleware để phân quyền người dùng dựa trên mảng Role được truyền vào
  */

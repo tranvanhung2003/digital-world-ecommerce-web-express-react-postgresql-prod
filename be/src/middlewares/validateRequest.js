@@ -15,6 +15,7 @@ const validateRequest = (schema) => {
       const errorMessage = error.details
         .map((detail) => detail.message)
         .join(', ');
+
       return next(new AppError(errorMessage, 400));
     }
 
@@ -36,13 +37,16 @@ const validateExpressValidator = (req, res, next) => {
     }));
 
     // Log chi tiết để debug
-    console.log('Validation Errors:', JSON.stringify(formattedErrors, null, 2));
+    console.log(
+      'Các lỗi xác thực dữ liệu:',
+      JSON.stringify(formattedErrors, null, 2),
+    );
     console.log('Request Body:', JSON.stringify(req.body, null, 2));
     console.log('Request Params:', JSON.stringify(req.params, null, 2));
 
     return res.status(400).json({
       status: 'fail',
-      message: 'Validation error',
+      message: 'Lỗi xác thực dữ liệu',
       errors: formattedErrors,
     });
   }

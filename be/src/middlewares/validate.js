@@ -16,7 +16,7 @@ const validate = (schema) => {
         message: detail.message,
       }));
 
-      return next(new AppError('Validation error', 400, { errors }));
+      return next(new AppError('Lỗi xác thực dữ liệu', 400, { errors }));
     }
 
     next();
