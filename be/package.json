@@ -1,5 +1,5 @@
 {
-  "name": "websitebanhangmini-backend",
+  "name": "digital-world-v1",
   "version": "1.0.0",
   "main": "src/server.js",
   "scripts": {
@@ -11,8 +11,10 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed": "sequelize-cli db:seed:all",
     "db:reset": "sequelize-cli db:drop && sequelize-cli db:create && sequelize-cli db:migrate && sequelize-cli db:seed:all",
-    "import:sample": "node import-sample-data.js",
-    "import:json": "node import-json-data.js"
+    "seed:admin-user": "node scripts/seed-admin-user.js",
+    "seed:news": "node scripts/seed-news.js",
+    "seed:warranty-packages": "node scripts/seed-warranty-packages.js",
+    "seed:products": "node scripts/seed-products.js"
   },
   "keywords": [
     "ecommerce",

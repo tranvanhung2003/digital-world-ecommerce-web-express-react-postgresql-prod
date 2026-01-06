@@ -1,6 +1,6 @@
 # E-commerce Backend API
 
-Backend API cho website bán hàng mini, được xây dựng bằng Node.js, Express và Sequelize.
+Backend API cho website bán hàng, được xây dựng bằng Node.js, Express và Sequelize.
 
 ## Tính năng
 
