@@ -5,7 +5,9 @@ const logFormat = winston.format.printf(({ level, message, timestamp }) => {
   return `${timestamp} ${level}: ${message}`;
 });
 
-// Tạo logger với các transport
+/**
+ * Tạo logger với các transport khác nhau: console và file.
+ */
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
   format: winston.format.combine(

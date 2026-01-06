@@ -1,7 +1,6 @@
 /**
- * Sequelize Metadata Helpers
+ * Lấy tên bảng từ mô hình Sequelize
  */
-
 const getTableName = (model) => {
   if (model && model.getTableName) {
     const tableName = model.getTableName();
@@ -16,6 +15,9 @@ const getTableName = (model) => {
   return null;
 };
 
+/**
+ * Lấy tên trường (field) từ một thuộc tính của mô hình Sequelize
+ */
 const getField = (model, attribute) => {
   if (model && model.rawAttributes && model.rawAttributes[attribute]) {
     return model.rawAttributes[attribute].field || attribute;
