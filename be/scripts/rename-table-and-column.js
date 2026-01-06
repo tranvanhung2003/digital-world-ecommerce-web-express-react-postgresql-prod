@@ -5,6 +5,8 @@
 const { sequelize } = require('../src/models');
 
 async function renameTableAndColumn() {
+  // Thứ tự các bảng là quan trọng để tránh vi phạm ràng buộc khóa ngoại.
+  // Thứ tự các bảng: bảng cha trước, bảng con sau.
   const RENAME_MAPS = [
     {
       oldTableName: 'old_table_1',
