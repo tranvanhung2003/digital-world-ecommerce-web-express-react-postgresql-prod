@@ -7,11 +7,16 @@ const { AppError } = require('../middlewares/errorHandler');
 
 class ImageService {
   constructor() {
+    // Đường dẫn thư mục upload
     this.uploadDir = path.join(__dirname, '../../uploads');
+
+    // Khởi tạo thư mục upload khi khởi động service
     this.initializeDirectories();
   }
 
-  // Initialize upload directories
+  /**
+   * Khởi tạo thư mục upload
+   */
   async initializeDirectories() {
     const dirs = [
       path.join(this.uploadDir, 'images/products'),
@@ -23,49 +28,77 @@ class ImageService {
 
     for (const dir of dirs) {
       try {
+        // Tạo thư mục nếu chưa tồn tại
+        // recursive: true để tạo cả thư mục cha nếu chưa tồn tại
         await fs.mkdir(dir, { recursive: true });
       } catch (error) {
-        console.error(`Failed to create directory ${dir}:`, error);
+        console.error(`Tạo thư mục ${dir} thất bại:`, error);
       }
     }
   }
 
-  // Generate organized file path based on date
+  /**
+   * Tạo đường dẫn tệp theo cấu trúc /images/{category}/{year}/{month}/{fileName}
+   */
   generateFilePath(category, fileName) {
+    // Lấy ngày hiện tại
     const now = new Date();
-    const year = now.getFullYear();
+
+    // Lấy năm ở dạng string 4 chữ số
+    const year = String(now.getFullYear());
+
+    // Lấy tháng ở dạng string 2 chữ số
     const month = String(now.getMonth() + 1).padStart(2, '0');
 
-    return path.join('images', category, year.toString(), month, fileName);
+    // // Lấy ngày ở dạng string 2 chữ số
+    // const day = String(now.getDate()).padStart(2, '0');
+
+    return path.join('images', category, year, month, fileName);
   }
 
-  // Generate unique filename with UUID
+  /**
+   * Tạo tên tệp duy nhất với UUID
+   */
   generateUniqueFileName(originalName) {
+    // Tạo UUID
     const uuid = uuidv4();
+
+    // Lấy phần mở rộng từ tên tệp gốc
     const ext = path.extname(originalName);
+
+    // Trả về tên tệp mới với UUID và phần mở rộng
     return `${uuid}${ext}`;
   }
 
-  // Get image dimensions
+  /**
+   * Lấy kích thước ảnh
+   */
   async getImageDimensions(filePath) {
     try {
+      // Sử dụng sharp để lấy metadata ảnh
       const metadata = await sharp(filePath).metadata();
+
+      // Trả về kích thước
       return {
         width: metadata.width,
         height: metadata.height,
       };
     } catch (error) {
-      console.error('Error getting image dimensions:', error);
+      console.error('Lỗi khi lấy kích thước ảnh:', error);
+
       return { width: null, height: null };
     }
   }
 
-  // Process and optimize image
+  /**
+   * Xử lý và tối ưu ảnh: resize, nén, xoay, sau đó lưu ảnh mới
+   */
   async processImage(inputPath, outputPath, options = {}) {
     try {
+      // Khởi tạo sharp với tệp đầu vào
       let sharpInstance = sharp(inputPath);
 
-      // Resize if specified
+      // Resize ảnh nếu có yêu cầu
       if (options.width || options.height) {
         sharpInstance = sharpInstance.resize({
           width: options.width,
@@ -75,36 +108,46 @@ class ImageService {
         });
       }
 
-      // Apply quality settings
+      // Điều chỉnh chất lượng ảnh nếu có yêu cầu
       if (options.quality) {
         if (outputPath.endsWith('.jpg') || outputPath.endsWith('.jpeg')) {
+          // Case JPG/JPEG
           sharpInstance = sharpInstance.jpeg({ quality: options.quality });
         } else if (outputPath.endsWith('.png')) {
+          // Case PNG
           sharpInstance = sharpInstance.png({ quality: options.quality });
         } else if (outputPath.endsWith('.webp')) {
+          // Case WEBP
           sharpInstance = sharpInstance.webp({ quality: options.quality });
         }
       }
 
-      // Auto-orient based on EXIF data
+      // Tự động xoay ảnh nếu cần thiết, dựa trên dữ liệu EXIF
+      // EXIF là dữ liệu kèm theo ảnh, thường được sử dụng để lưu thông tin về hướng chụp ảnh
+      // sharp sẽ đọc dữ liệu EXIF và xoay ảnh cho đúng hướng
       sharpInstance = sharpInstance.rotate();
 
-      // Ensure output directory exists
+      // Đảm bảo thư mục chứa tệp đầu ra tồn tại
       await fs.mkdir(path.dirname(outputPath), { recursive: true });
 
-      // Save processed image
+      // Lưu ảnh đã xử lý
       await sharpInstance.toFile(outputPath);
 
       return outputPath;
     } catch (error) {
-      console.error('Error processing image:', error);
-      throw new AppError('Failed to process image', 500);
+      console.error('Lỗi khi xử lý ảnh:', error);
+
+      throw new AppError('Xử lý ảnh thất bại', 500);
     }
   }
 
-  // Generate thumbnails
-  async generateThumbnails(originalPath, fileName, category) {
+  /**
+   * Tạo các ảnh thu nhỏ (thumbnails) với kích thước khác nhau
+   */
+  async generateThumbnails(originalPath, fileName) {
     const thumbnails = [];
+
+    // Định nghĩa các kích thước thumbnail
     const thumbSizes = [
       { name: 'small', width: 150, height: 150 },
       { name: 'medium', width: 300, height: 300 },
@@ -113,10 +156,16 @@ class ImageService {
 
     for (const size of thumbSizes) {
       try {
+        // Tạo tên tệp thumbnail
         const thumbFileName = `${path.parse(fileName).name}_${size.name}${path.extname(fileName)}`;
+
+        // Tạo đường dẫn tệp thumbnail
         const thumbPath = this.generateFilePath('thumbnails', thumbFileName);
+
+        // Đường dẫn đầy đủ đến tệp thumbnail
         const fullThumbPath = path.join(this.uploadDir, thumbPath);
 
+        // Xử lý và lưu thumbnail
         await this.processImage(originalPath, fullThumbPath, {
           width: size.width,
           height: size.height,
@@ -124,23 +173,26 @@ class ImageService {
           fit: 'cover',
         });
 
+        // Lưu thông tin thumbnail vào mảng kết quả
         thumbnails.push({
           size: size.name,
           path: thumbPath,
           fileName: thumbFileName,
         });
       } catch (error) {
-        console.error(`Error generating ${size.name} thumbnail:`, error);
+        console.error(`Lỗi khi tạo ${size.name} thumbnail:`, error);
       }
     }
 
     return thumbnails;
   }
 
-  // Upload and process single image
+  /**
+   * Tải lên và xử lý một ảnh
+   */
   async uploadImage(file, options = {}) {
     try {
-      console.log('📤 Starting image upload:', {
+      console.log('Đang bắt đầu upload ảnh:', {
         originalname: file.originalname,
         mimetype: file.mimetype,
         size: file.size,
@@ -156,28 +208,32 @@ class ImageService {
         optimize = true,
       } = options;
 
-      // Generate unique filename
+      // Tạo tên tệp duy nhất
       const fileName = this.generateUniqueFileName(file.originalname);
+
+      // Tạo đường dẫn tệp
       const filePath = this.generateFilePath(category, fileName);
+
+      // Đường dẫn đầy đủ đến tệp
       const fullPath = path.join(this.uploadDir, filePath);
 
-      // Ensure directory exists
+      // Đảm bảo thư mục tồn tại
       await fs.mkdir(path.dirname(fullPath), { recursive: true });
 
-      // Process and save image
       if (optimize) {
+        // Nếu có yêu cầu tối ưu ảnh, xử lý ảnh trước khi lưu
         await this.processImage(file.path, fullPath, {
           quality: 90,
         });
       } else {
-        // Just move the file
+        // Nếu không có yêu cầu tối ưu, chỉ cần sao chép tệp
         await fs.copyFile(file.path, fullPath);
       }
 
-      // Get image dimensions
+      // Lấy kích thước ảnh
       const dimensions = await this.getImageDimensions(fullPath);
 
-      // Save to database
+      // Lưu vào database
       const imageRecord = await Image.create({
         originalName: file.originalname,
         fileName: fileName,
@@ -191,23 +247,21 @@ class ImageService {
         userId: userId,
       });
 
-      // Generate thumbnails if requested
       let thumbnails = [];
+
+      // Tạo các thumbnails nếu được yêu cầu và ảnh thuộc category 'product'
       if (generateThumbs && category === 'product') {
-        thumbnails = await this.generateThumbnails(
-          fullPath,
-          fileName,
-          category,
-        );
+        thumbnails = await this.generateThumbnails(fullPath, fileName);
       }
 
-      // Clean up temp file
+      // Dọn dẹp tệp tạm thời đã upload
       try {
         await fs.unlink(file.path);
       } catch (error) {
-        console.error('Error cleaning up temp file:', error);
+        console.error('Lỗi khi dọn dẹp tệp tạm thời đã upload:', error);
       }
 
+      // Trả về thông tin ảnh đã upload
       return {
         id: imageRecord.id,
         fileName: fileName,
@@ -220,21 +274,27 @@ class ImageService {
         category,
       };
     } catch (error) {
-      console.error('Error uploading image:', error);
-      throw new AppError('Failed to upload image', 500);
+      console.error('Lỗi khi upload ảnh:', error);
+      throw new AppError('Upload ảnh thất bại', 500);
     }
   }
 
-  // Upload multiple images
+  /**
+   * Tải lên và xử lý nhiều ảnh
+   */
   async uploadMultipleImages(files, options = {}) {
     const results = [];
     const errors = [];
 
     for (const file of files) {
       try {
+        // Upload từng ảnh một
         const result = await this.uploadImage(file, options);
+
+        // Nếu thành công, thêm vào mảng results
         results.push(result);
       } catch (error) {
+        // Nếu có lỗi, thêm vào mảng errors
         errors.push({
           fileName: file.originalname,
           error: error.message,
@@ -242,6 +302,7 @@ class ImageService {
       }
     }
 
+    // Trả về kết quả tổng hợp
     return {
       successful: results,
       failed: errors,
@@ -253,51 +314,66 @@ class ImageService {
     };
   }
 
-  // Get image by ID
+  /**
+   * Lấy ảnh theo ID
+   */
   async getImageById(id) {
     try {
       const image = await Image.findByPk(id);
+
       if (!image) {
-        throw new AppError('Image not found', 404);
+        throw new AppError('Không tìm thấy ảnh', 404);
       }
+
       return image;
     } catch (error) {
       throw error;
     }
   }
 
-  // Delete image
+  /**
+   * Xóa ảnh
+   */
   async deleteImage(id) {
     try {
+      // Lấy thông tin ảnh từ database
       const image = await this.getImageById(id);
+
+      // Tạo đường dẫn đầy đủ đến tệp ảnh
       const fullPath = path.join(this.uploadDir, image.filePath);
 
-      // Delete file from filesystem
       try {
+        // Xóa tập tin khỏi hệ thống tập tin
         await fs.unlink(fullPath);
       } catch (error) {
-        console.error('Error deleting file:', error);
+        console.error('Lỗi khi xóa tệp:', error);
       }
 
-      // Delete thumbnails if they exist
+      // Xóa các ảnh thu nhỏ (thumbnails) nếu có
       if (image.category === 'product') {
+        // Xóa các kích thước thumbnail
         const thumbSizes = ['small', 'medium', 'large'];
+
         for (const size of thumbSizes) {
           try {
             const thumbFileName = `${path.parse(image.fileName).name}_${size}${path.extname(image.fileName)}`;
+
+            // Tạo đường dẫn đầy đủ đến tệp thumbnail
             const thumbPath = path.join(
               this.uploadDir,
               'images/thumbnails',
               thumbFileName,
             );
+
+            // Xóa tệp thumbnail
             await fs.unlink(thumbPath);
           } catch (error) {
-            // Ignore thumbnail deletion errors
+            // Bỏ qua nếu có lỗi khi xóa thumbnail
           }
         }
       }
 
-      // Delete from database
+      // Xóa bản ghi ảnh khỏi database
       await image.destroy();
 
       return { success: true };
@@ -306,50 +382,69 @@ class ImageService {
     }
   }
 
-  // Get images by product ID
+  /**
+   * Lấy ảnh theo productId
+   */
   async getImagesByProductId(productId) {
     try {
+      // Tìm tất cả ảnh liên quan đến productId
       const images = await Image.findAll({
         where: { productId, isActive: true },
         order: [['createdAt', 'ASC']],
       });
+
       return images;
     } catch (error) {
       throw error;
     }
   }
 
-  // Convert base64 to file
+  /**
+   * Chuyển đổi dữ liệu base64 thành tệp ảnh và lưu vào hệ thống
+   */
   async convertBase64ToFile(base64Data, options = {}) {
     try {
       const { category = 'product', productId = null, userId = null } = options;
 
-      // Extract mime type and base64 data
+      // Trích xuất mime type và dữ liệu base64
+      // base64Data có định dạng: data:{mimeType};base64,{data}
+      // Ví dụ: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
       const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+
+      // Kiểm tra định dạng base64 hợp lệ
       if (!matches || matches.length !== 3) {
-        throw new AppError('Invalid base64 data', 400);
+        throw new AppError('Dữ liệu base64 không hợp lệ', 400);
       }
 
+      // Trích xuất mime type và dữ liệu base64
       const mimeType = matches[1];
       const base64 = matches[2];
 
-      // Determine file extension
+      // Lấy phần mở rộng từ mime type
       const ext = mimeType.split('/')[1];
+
+      // Tạo tên tệp duy nhất
       const fileName = `${uuidv4()}.${ext}`;
+
+      // Tạo đường dẫn tệp
       const filePath = this.generateFilePath(category, fileName);
+
+      // Đường dẫn đầy đủ đến tệp
       const fullPath = path.join(this.uploadDir, filePath);
 
-      // Ensure directory exists
+      // Đảm bảo thư mục tồn tại
       await fs.mkdir(path.dirname(fullPath), { recursive: true });
 
-      // Convert and save
+      // Chuyển đổi base64 thành buffer
       const buffer = Buffer.from(base64, 'base64');
+
+      // Ghi buffer vào tệp
       await fs.writeFile(fullPath, buffer);
 
-      // Get image dimensions
+      // Lấy kích thước ảnh
       const dimensions = await this.getImageDimensions(fullPath);
 
-      // Save to database
+      // Lưu vào database
       const imageRecord = await Image.create({
         originalName: `converted_${fileName}`,
         fileName: fileName,
@@ -363,6 +458,7 @@ class ImageService {
         userId: userId,
       });
 
+      // Trả về thông tin ảnh đã lưu
       return {
         id: imageRecord.id,
         fileName: fileName,
@@ -374,38 +470,49 @@ class ImageService {
         category,
       };
     } catch (error) {
-      console.error('Error converting base64 to file:', error);
-      throw new AppError('Failed to convert base64 to file', 500);
+      console.error('Lỗi khi chuyển đổi base64 sang file:', error);
+      throw new AppError('Chuyển đổi base64 sang file thất bại', 500);
     }
   }
 
-  // Cleanup orphaned files
+  /**
+   * Dọn dẹp các tệp mồ côi (orphaned files) không còn liên kết với bản ghi ảnh trong database
+   */
   async cleanupOrphanedFiles() {
     try {
-      // Get all files in upload directory
+      // Lấy tất cả tệp trong thư mục upload
       const allFiles = await this.getAllFiles(this.uploadDir);
 
-      // Get all active images from database
+      // Lấy tất cả ảnh đang hoạt động từ database
       const activeImages = await Image.findAll({
         where: { isActive: true },
         attributes: ['filePath'],
       });
 
+      // Tạo tập hợp các đường dẫn tệp đang hoạt động
+      // Sử dụng Set để tối ưu việc tra cứu
       const activeFilePaths = new Set(activeImages.map((img) => img.filePath));
 
-      // Find orphaned files
+      // Lọc các tệp không có trong tập hợp activeFilePaths (các tệp mồ côi)
       const orphanedFiles = allFiles.filter((filePath) => {
+        // Chuyển đổi đường dẫn tệp thành dạng tương đối so với thư mục upload
         const relativePath = path.relative(this.uploadDir, filePath);
+
+        // Kiểm tra nếu tệp không có trong tập hợp activeFilePaths
+        // Nếu không có thì là tệp mồ côi
         return !activeFilePaths.has(relativePath);
       });
 
-      // Delete orphaned files
+      // Xóa các tệp mồ côi
       for (const filePath of orphanedFiles) {
         try {
           await fs.unlink(filePath);
-          console.log(`Deleted orphaned file: ${filePath}`);
+          console.log(`Đã xóa tệp mồ côi (orphaned): ${filePath}`);
         } catch (error) {
-          console.error(`Error deleting orphaned file ${filePath}:`, error);
+          console.error(
+            `Lỗi khi xóa tệp mồ côi (orphaned) ${filePath}:`,
+            error,
+          );
         }
       }
 
@@ -416,22 +523,33 @@ class ImageService {
         deletedFiles: orphanedFiles.length,
       };
     } catch (error) {
-      console.error('Error cleaning up orphaned files:', error);
-      throw new AppError('Failed to cleanup orphaned files', 500);
+      console.error('Lỗi khi dọn dẹp các tệp mồ côi (orphaned):', error);
+      throw new AppError('Dọn dẹp các tệp mồ côi (orphaned) thất bại', 500);
     }
   }
 
-  // Helper method to get all files recursively
+  /**
+   * Helper method: đệ quy để lấy tất cả tệp trong một thư mục và các thư mục con
+   */
   async getAllFiles(dirPath) {
     const files = [];
+
+    // Đọc nội dung thư mục với tùy chọn withFileTypes để biết được item là tệp hay thư mục
     const items = await fs.readdir(dirPath, { withFileTypes: true });
 
+    // Duyệt qua từng item trong thư mục
     for (const item of items) {
+      // Tạo đường dẫn đầy đủ đến item
       const fullPath = path.join(dirPath, item.name);
+
       if (item.isDirectory()) {
+        // Case item là thư mục, đệ quy để lấy tất cả tệp bên trong
         const subFiles = await this.getAllFiles(fullPath);
+
+        // Thêm các tệp con vào mảng files
         files.push(...subFiles);
       } else {
+        // Case item là tệp, thêm vào mảng files
         files.push(fullPath);
       }
     }
