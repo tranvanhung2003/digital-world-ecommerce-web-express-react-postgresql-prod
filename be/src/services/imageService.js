@@ -197,7 +197,7 @@ class ImageService {
         thumbnails = await this.generateThumbnails(
           fullPath,
           fileName,
-          category
+          category,
         );
       }
 
@@ -288,7 +288,7 @@ class ImageService {
             const thumbPath = path.join(
               this.uploadDir,
               'images/thumbnails',
-              thumbFileName
+              thumbFileName,
             );
             await fs.unlink(thumbPath);
           } catch (error) {
