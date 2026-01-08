@@ -1,6 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * Wishlist Model.
+ */
 const Wishlist = sequelize.define(
   'Wishlist',
   {
@@ -27,7 +30,7 @@ const Wishlist = sequelize.define(
         fields: ['user_id', 'product_id'],
       },
     ],
-  }
+  },
 );
 
 module.exports = Wishlist;

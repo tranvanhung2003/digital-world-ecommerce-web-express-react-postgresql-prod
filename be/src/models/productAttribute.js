@@ -1,6 +1,15 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * ProductAttribute Model.
+ *
+ * Thuộc tính "type" sử dụng ENUM("color", "size", "material", "custom")
+ * để xác định loại thuộc tính sản phẩm.
+ *
+ * Thuộc tính "values" sử dụng JSONB
+ * để lưu trữ danh sách các giá trị thuộc tính sản phẩm.
+ */
 const ProductAttribute = sequelize.define(
   'ProductAttribute',
   {
@@ -41,7 +50,7 @@ const ProductAttribute = sequelize.define(
   {
     tableName: 'product_attributes',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = ProductAttribute;

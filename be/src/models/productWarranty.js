@@ -1,6 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * ProductWarranty Model.
+ */
 const ProductWarranty = sequelize.define(
   'ProductWarranty',
   {
@@ -28,7 +31,7 @@ const ProductWarranty = sequelize.define(
   {
     tableName: 'product_warranties',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = ProductWarranty;

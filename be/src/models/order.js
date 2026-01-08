@@ -1,6 +1,15 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * Order Model.
+ *
+ * Thuộc tính "status" sử dụng ENUM("pending", "processing", "shipped", "delivered", "cancelled")
+ * để giới hạn các trạng thái đơn hàng.
+ *
+ * Thuộc tính "paymentStatus" sử dụng ENUM("pending", "paid", "failed", "refunded")
+ * để theo dõi trạng thái thanh toán của đơn hàng.
+ */
 const Order = sequelize.define(
   'Order',
   {
@@ -24,7 +33,7 @@ const Order = sequelize.define(
         'processing',
         'shipped',
         'delivered',
-        'cancelled'
+        'cancelled',
       ),
       defaultValue: 'pending',
     },
@@ -164,7 +173,7 @@ const Order = sequelize.define(
   {
     tableName: 'orders',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = Order;

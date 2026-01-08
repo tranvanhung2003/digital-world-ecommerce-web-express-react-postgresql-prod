@@ -1,6 +1,15 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * WarrantyPackage Model.
+ *
+ * Thuộc tính "price" có giá trị tối thiểu là 0.
+ *
+ * Thuộc tính "terms" sử dụng JSONB để lưu trữ các điều khoản bảo hành phức tạp.
+ *
+ * Thuộc tính "coverage" sử dụng ARRAY để lưu trữ nhiều mục phạm vi bảo hành.
+ */
 const WarrantyPackage = sequelize.define(
   'WarrantyPackage',
   {
@@ -52,7 +61,7 @@ const WarrantyPackage = sequelize.define(
   {
     tableName: 'warranty_packages',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = WarrantyPackage;

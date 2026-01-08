@@ -1,6 +1,12 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * Feedback Model.
+ *
+ * Thuộc tính "status" sử dụng ENUM("pending", "reviewed", "resolved")
+ * để giới hạn các trạng thái phản hồi.
+ */
 const Feedback = sequelize.define(
   'Feedback',
   {
@@ -40,7 +46,7 @@ const Feedback = sequelize.define(
   {
     tableName: 'feedbacks',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = Feedback;

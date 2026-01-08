@@ -1,6 +1,11 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * CartItem Model.
+ *
+ * Thuộc tính "warrantyPackageIds" sử dụng mảng để lưu trữ nhiều ID gói bảo hành.
+ */
 const CartItem = sequelize.define(
   'CartItem',
   {

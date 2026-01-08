@@ -28,13 +28,19 @@ const Feedback = require('./feedback');
 User.hasMany(Address, { foreignKey: 'userId', as: 'addresses' });
 Address.belongsTo(User, { foreignKey: 'userId' });
 
+// ----------------------------------------------------------------------------------------------------
+
 // User - News relationship
 User.hasMany(News, { foreignKey: 'userId', as: 'news' });
 News.belongsTo(User, { foreignKey: 'userId', as: 'author' });
 
+// ----------------------------------------------------------------------------------------------------
+
 // Category - Category (self-referencing) relationship
 Category.hasMany(Category, { foreignKey: 'parentId', as: 'children' });
 Category.belongsTo(Category, { foreignKey: 'parentId', as: 'parent' });
+
+// ----------------------------------------------------------------------------------------------------
 
 // Product - Category relationship (many-to-many)
 Product.belongsToMany(Category, {
@@ -50,12 +56,16 @@ Category.belongsToMany(Product, {
   as: 'products',
 });
 
+// ----------------------------------------------------------------------------------------------------
+
 // Product - ProductAttribute relationship
 Product.hasMany(ProductAttribute, {
   foreignKey: 'productId',
   as: 'attributes',
 });
 ProductAttribute.belongsTo(Product, { foreignKey: 'productId' });
+
+// ----------------------------------------------------------------------------------------------------
 
 // Product - ProductVariant relationship
 Product.hasMany(ProductVariant, { foreignKey: 'productId', as: 'variants' });
@@ -68,6 +78,8 @@ Product.hasOne(ProductVariant, {
   scope: { isDefault: true },
 });
 
+// ----------------------------------------------------------------------------------------------------
+
 // Product - ProductSpecification relationship
 Product.hasMany(ProductSpecification, {
   foreignKey: 'productId',
@@ -75,45 +87,67 @@ Product.hasMany(ProductSpecification, {
 });
 ProductSpecification.belongsTo(Product, { foreignKey: 'productId' });
 
+// ----------------------------------------------------------------------------------------------------
+
 // Product - Review relationship
 Product.hasMany(Review, { foreignKey: 'productId', as: 'reviews' });
 Review.belongsTo(Product, { foreignKey: 'productId' });
+
+// ----------------------------------------------------------------------------------------------------
 
 // User - Review relationship
 User.hasMany(Review, { foreignKey: 'userId', as: 'reviews' });
 Review.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+// ----------------------------------------------------------------------------------------------------
+
 // Review - ReviewFeedback relationship
 Review.hasMany(ReviewFeedback, { foreignKey: 'reviewId', as: 'feedbacks' });
 ReviewFeedback.belongsTo(Review, { foreignKey: 'reviewId' });
+
+// ----------------------------------------------------------------------------------------------------
 
 // User - ReviewFeedback relationship
 User.hasMany(ReviewFeedback, { foreignKey: 'userId' });
 ReviewFeedback.belongsTo(User, { foreignKey: 'userId' });
 
+// ----------------------------------------------------------------------------------------------------
+
 // User - Cart relationship
 User.hasMany(Cart, { foreignKey: 'userId', as: 'carts' });
 Cart.belongsTo(User, { foreignKey: 'userId' });
+
+// ----------------------------------------------------------------------------------------------------
 
 // Cart - CartItem relationship
 Cart.hasMany(CartItem, { foreignKey: 'cartId', as: 'items' });
 CartItem.belongsTo(Cart, { foreignKey: 'cartId' });
 
+// ----------------------------------------------------------------------------------------------------
+
 // CartItem - Product relationship
 CartItem.belongsTo(Product, { foreignKey: 'productId' });
 CartItem.belongsTo(ProductVariant, { foreignKey: 'variantId' });
+
+// ----------------------------------------------------------------------------------------------------
 
 // User - Order relationship
 User.hasMany(Order, { foreignKey: 'userId', as: 'orders' });
 Order.belongsTo(User, { foreignKey: 'userId' });
 
+// ----------------------------------------------------------------------------------------------------
+
 // Order - OrderItem relationship
 Order.hasMany(OrderItem, { foreignKey: 'orderId', as: 'items' });
 OrderItem.belongsTo(Order, { foreignKey: 'orderId' });
 
+// ----------------------------------------------------------------------------------------------------
+
 // OrderItem - Product relationship
 OrderItem.belongsTo(Product, { foreignKey: 'productId' });
 OrderItem.belongsTo(ProductVariant, { foreignKey: 'variantId' });
+
+// ----------------------------------------------------------------------------------------------------
 
 // User - Wishlist - Product relationship
 User.belongsToMany(Product, {
@@ -128,6 +162,8 @@ Product.belongsToMany(User, {
   otherKey: 'userId',
   as: 'wishlistedBy',
 });
+
+// ----------------------------------------------------------------------------------------------------
 
 // Product - WarrantyPackage relationship (many-to-many)
 Product.belongsToMany(WarrantyPackage, {
@@ -158,6 +194,8 @@ WarrantyPackage.hasMany(ProductWarranty, {
   as: 'productWarranties',
 });
 
+// ----------------------------------------------------------------------------------------------------
+
 // AttributeGroup - AttributeValue relationship
 AttributeGroup.hasMany(AttributeValue, {
   foreignKey: 'attributeGroupId',
@@ -167,6 +205,8 @@ AttributeValue.belongsTo(AttributeGroup, {
   foreignKey: 'attributeGroupId',
   as: 'group',
 });
+
+// ----------------------------------------------------------------------------------------------------
 
 // Product - AttributeGroup relationship (many-to-many)
 Product.belongsToMany(AttributeGroup, {
@@ -181,6 +221,8 @@ AttributeGroup.belongsToMany(Product, {
   otherKey: 'productId',
   as: 'products',
 });
+
+// ----------------------------------------------------------------------------------------------------
 
 // Image relationships
 Image.belongsTo(Product, { foreignKey: 'productId', as: 'product' });

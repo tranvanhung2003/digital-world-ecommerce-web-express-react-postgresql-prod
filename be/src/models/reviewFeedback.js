@@ -1,6 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * ReviewFeedback Model.
+ */
 const ReviewFeedback = sequelize.define(
   'ReviewFeedback',
   {
@@ -31,7 +34,7 @@ const ReviewFeedback = sequelize.define(
         fields: ['review_id', 'user_id'],
       },
     ],
-  }
+  },
 );
 
 module.exports = ReviewFeedback;

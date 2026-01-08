@@ -1,6 +1,11 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * AttributeGroup Model.
+ *
+ * Thuộc tính "type" có validate để chỉ chấp nhận các giá trị: "color", "config", "storage", "size", "custom".
+ */
 const AttributeGroup = sequelize.define(
   'AttributeGroup',
   {
@@ -44,7 +49,7 @@ const AttributeGroup = sequelize.define(
   {
     tableName: 'attribute_groups',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = AttributeGroup;

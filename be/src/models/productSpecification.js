@@ -1,6 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * ProductSpecification Model.
+ */
 const ProductSpecification = sequelize.define(
   'ProductSpecification',
   {
@@ -36,7 +39,7 @@ const ProductSpecification = sequelize.define(
   {
     tableName: 'product_specifications',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = ProductSpecification;

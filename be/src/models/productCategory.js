@@ -1,6 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * ProductCategory Model.
+ */
 const ProductCategory = sequelize.define(
   'ProductCategory',
   {
@@ -27,7 +30,7 @@ const ProductCategory = sequelize.define(
         fields: ['product_id', 'category_id'],
       },
     ],
-  }
+  },
 );
 
 module.exports = ProductCategory;

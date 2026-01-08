@@ -1,6 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * News Model.
+ */
 const News = sequelize.define(
   'News',
   {
@@ -26,8 +29,9 @@ const News = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    // Mô tả ngắn gọn về tin tức
     description: {
-      type: DataTypes.TEXT, // Short description
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     category: {
@@ -39,27 +43,25 @@ const News = sequelize.define(
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
+    // Danh sách từ khóa liên quan đến tin tức, lưu dưới dạng chuỗi phân cách bằng dấu phẩy
     tags: {
-        type: DataTypes.STRING, // Comma separated tags
-        allowNull: true,
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     isPublished: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    // Thuộc tính tùy chọn để liên kết tin tức với người dùng (tác giả)
     userId: {
       type: DataTypes.UUID,
-      allowNull: true, // Optional if we want to allow system posts or delete user
-      references: {
-        model: 'users',
-        key: 'id',
-      },
+      allowNull: true,
     },
   },
   {
     tableName: 'news',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = News;

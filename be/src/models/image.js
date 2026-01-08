@@ -1,6 +1,12 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * Image Model.
+ *
+ * Thuộc tính "category" sử dụng ENUM("product", "thumbnail", "user", "review")
+ * để phân loại hình ảnh theo mục đích sử dụng.
+ */
 const Image = sequelize.define(
   'Image',
   {
@@ -52,19 +58,11 @@ const Image = sequelize.define(
       type: DataTypes.UUID,
       allowNull: true,
       field: 'product_id',
-      references: {
-        model: 'products',
-        key: 'id',
-      },
     },
     userId: {
       type: DataTypes.UUID,
       allowNull: true,
       field: 'user_id',
-      references: {
-        model: 'users',
-        key: 'id',
-      },
     },
     isActive: {
       type: DataTypes.BOOLEAN,

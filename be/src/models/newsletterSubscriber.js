@@ -1,6 +1,12 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * NewsletterSubscriber Model.
+ *
+ * Thuộc tính "status" sử dụng ENUM("active", "unsubscribed")
+ * để theo dõi trạng thái đăng ký của người dùng.
+ */
 const NewsletterSubscriber = sequelize.define(
   'NewsletterSubscriber',
   {
@@ -25,7 +31,7 @@ const NewsletterSubscriber = sequelize.define(
   {
     tableName: 'newsletter_subscribers',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = NewsletterSubscriber;

@@ -1,6 +1,11 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * AttributeValue Model.
+ *
+ * Thuộc tính "colorCode" có validate để đảm bảo định dạng mã màu hex.
+ */
 const AttributeValue = sequelize.define(
   'AttributeValue',
   {
@@ -29,7 +34,7 @@ const AttributeValue = sequelize.define(
       validate: {
         isValidColor(value) {
           if (value && !/^#[0-9A-F]{6}$/i.test(value)) {
-            throw new Error('Color code must be in hex format (e.g., #FF0000)');
+            throw new Error('Mã màu phải ở định dạng hex (ví dụ: #FF0000)');
           }
         },
       },
@@ -54,13 +59,13 @@ const AttributeValue = sequelize.define(
       defaultValue: true,
       field: 'is_active',
     },
-    // New field: Whether this attribute value affects the product name
+    // Thuộc tính affectsName xác định xem giá trị thuộc tính này có ảnh hưởng đến tên sản phẩm hay không
     affectsName: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       field: 'affects_name',
     },
-    // New field: Name template for product naming
+    // Thuộc tính nameTemplate lưu trữ mẫu tên sản phẩm liên quan đến giá trị thuộc tính
     nameTemplate: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -71,7 +76,7 @@ const AttributeValue = sequelize.define(
   {
     tableName: 'attribute_values',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = AttributeValue;

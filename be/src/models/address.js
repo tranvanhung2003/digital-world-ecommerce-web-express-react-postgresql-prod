@@ -1,71 +1,74 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * Address Model.
+ */
 const Address = sequelize.define(
   'Address',
   {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
+      primaryKey: true,
     },
     userId: {
       type: DataTypes.UUID,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     firstName: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     lastName: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     company: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     address1: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     address2: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     city: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     state: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     zip: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     country: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     phone: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     isDefault: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false
+      defaultValue: false,
     },
   },
   {
     tableName: 'addresses',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = Address;

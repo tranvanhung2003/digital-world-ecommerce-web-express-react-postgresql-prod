@@ -1,6 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
+/**
+ * ProductAttributeGroup Model.
+ */
 const ProductAttributeGroup = sequelize.define(
   'ProductAttributeGroup',
   {
@@ -33,7 +36,7 @@ const ProductAttributeGroup = sequelize.define(
   {
     tableName: 'product_attribute_groups',
     timestamps: true,
-  }
+  },
 );
 
 module.exports = ProductAttributeGroup;
