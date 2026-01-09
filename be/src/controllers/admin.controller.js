@@ -627,7 +627,7 @@ const createProduct = catchAsync(async (req, res) => {
         await product.setCategories(validCategoryIds);
       }
     } catch (error) {
-      console.error('Error handling categories:', error);
+      console.error('Lỗi khi xử lý danh mục:', error);
       // Tiếp tục mà không có danh mục nếu có lỗi
     }
   }
@@ -636,9 +636,11 @@ const createProduct = catchAsync(async (req, res) => {
   if (attributes && attributes.length > 0) {
     try {
       console.log('Đang xử lý attributes:', attributes);
+
       const attributePromises = attributes.map(async (attr) => {
-        // Xử lý giá trị thuộc tính: nếu là chuỗi có dấu phẩy, tách thành mảng
         let attrValues = [];
+
+        // Xử lý giá trị thuộc tính: nếu là chuỗi có dấu phẩy, tách thành mảng
         if (typeof attr.value === 'string') {
           // Tách chuỗi thành mảng dựa trên dấu phẩy và loại bỏ khoảng trắng
           attrValues = attr.value
@@ -664,15 +666,17 @@ const createProduct = catchAsync(async (req, res) => {
           values: attrValues.length > 0 ? attrValues : ['Default'],
         });
       });
+
       await Promise.all(attributePromises);
     } catch (error) {
-      console.error('Error creating attributes:', error);
-      throw error; // Ném lỗi để transaction có thể rollback
+      console.error('Lỗi khi tạo thuộc tính:', error);
+      throw error; // Phải ném lỗi vì thuộc tính là bắt buộc
     }
   }
 
   // Xử lý variants
   let createdVariants = [];
+
   if (variants && variants.length > 0) {
     try {
       console.log('Đang xử lý variants:', variants);
@@ -699,7 +703,7 @@ const createProduct = catchAsync(async (req, res) => {
           Object.keys(variantAttributes).length > 0
         ) {
           try {
-            // Tạm thời bỏ qua validation để đảm bảo biến thể được tạo
+            // Bỏ qua validation để đảm bảo biến thể được tạo
             // const isValid = validateVariantAttributes(
             //   productAttributes,
             //   variantAttributes
@@ -745,8 +749,10 @@ const createProduct = catchAsync(async (req, res) => {
 
       createdVariants = await Promise.all(variantPromises);
 
-      // Cập nhật lại tổng tồn kho của sản phẩm từ các biến thể
+      // Tính tổng tồn kho từ các biến thể
       const totalStock = calculateTotalStock(createdVariants);
+
+      // Cập nhật lại tổng tồn kho của sản phẩm từ các biến thể
       await Product.update(
         {
           stockQuantity: totalStock,
@@ -755,8 +761,8 @@ const createProduct = catchAsync(async (req, res) => {
         { where: { id: product.id } },
       );
     } catch (error) {
-      console.error('Error creating variants:', error);
-      throw error;
+      console.error('Lỗi khi tạo biến thể:', error);
+      throw error; // Phải ném lỗi vì biến thể là bắt buộc
     }
   }
 
@@ -778,11 +784,12 @@ const createProduct = catchAsync(async (req, res) => {
       }));
 
       await ProductSpecification.bulkCreate(specificationData);
+
       console.log(
         `Đã tạo ${specifications.length} specifications cho sản phẩm ${product.id}`,
       );
     } catch (error) {
-      console.error('Error creating specifications:', error);
+      console.error('Lỗi khi tạo specifications:', error);
       // Không throw error để không làm fail toàn bộ quá trình tạo product
     }
   }
@@ -794,7 +801,6 @@ const createProduct = catchAsync(async (req, res) => {
     warrantyPackageIds.length > 0
   ) {
     try {
-      console.log('Creating warranty packages:', warrantyPackageIds);
       const { ProductWarranty, WarrantyPackage } = require('../models');
 
       // Kiểm tra xem các warranty packages có tồn tại không
@@ -802,9 +808,11 @@ const createProduct = catchAsync(async (req, res) => {
         'Đang tìm kiếm các gói bảo hành với IDs:',
         warrantyPackageIds,
       );
+
       const existingWarrantyPackages = await WarrantyPackage.findAll({
         where: { id: warrantyPackageIds, isActive: true },
       });
+
       console.log(
         'Đã tìm thấy các gói bảo hành:',
         existingWarrantyPackages.length,
@@ -822,12 +830,13 @@ const createProduct = catchAsync(async (req, res) => {
         );
 
         await Promise.all(warrantyPromises);
+
         console.log(
           `Đã tạo ${existingWarrantyPackages.length} gói bảo hành liên kết với sản phẩm ${product.id}`,
         );
       }
     } catch (error) {
-      console.error('Error creating warranty packages:', error);
+      console.error('Lỗi khi tạo gói bảo hành:', error);
       // Tiếp tục mà không làm fail toàn bộ quá trình tạo sản phẩm
     }
   }
