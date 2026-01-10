@@ -1,17 +1,21 @@
 const { WarrantyPackage, ProductWarranty, Product } = require('../models');
 const { validationResult } = require('express-validator');
 
-// Get all warranty packages
-exports.getAllWarrantyPackages = async (req, res) => {
+/**
+ * Lấy tất cả gói bảo hành
+ */
+const getAllWarrantyPackages = async (req, res) => {
   try {
     const { page = 1, limit = 10, isActive } = req.query;
     const offset = (page - 1) * limit;
 
     const whereClause = {};
+
     if (isActive !== undefined) {
       whereClause.isActive = isActive === 'true';
     }
 
+    // Lấy danh sách gói bảo hành với phân trang và lọc
     const { count, rows } = await WarrantyPackage.findAndCountAll({
       where: whereClause,
       order: [
@@ -35,29 +39,31 @@ exports.getAllWarrantyPackages = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching warranty packages:', error);
+    console.error('Lỗi khi lấy tất cả gói bảo hành:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Server error',
+      message: 'Lỗi máy chủ',
     });
   }
 };
 
-// Get warranty packages by product ID
-exports.getWarrantyPackagesByProduct = async (req, res) => {
+/**
+ * Lấy gói bảo hành theo sản phẩm
+ */
+const getWarrantyPackagesByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // Check if product exists
+    // Kiểm tra xem sản phẩm có tồn tại không
     const product = await Product.findByPk(productId);
     if (!product) {
       return res.status(404).json({
         status: 'error',
-        message: 'Product not found',
+        message: 'Sản phẩm không tồn tại',
       });
     }
 
-    // Get warranty packages for this product
+    // Lấy các gói bảo hành cho sản phẩm này
     const productWarranties = await ProductWarranty.findAll({
       where: { productId },
       include: [
@@ -73,7 +79,7 @@ exports.getWarrantyPackagesByProduct = async (req, res) => {
       ],
     });
 
-    // Extract warranty packages with default info
+    // Trích xuất thông tin các gói bảo hành với isDefault
     const warrantyPackages = productWarranties.map((pw) => ({
       ...pw.warrantyPackage.toJSON(),
       isDefault: pw.isDefault,
@@ -87,16 +93,18 @@ exports.getWarrantyPackagesByProduct = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching warranty packages for product:', error);
+    console.error('Lỗi khi lấy các gói bảo hành theo sản phẩm:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Server error',
+      message: 'Lỗi máy chủ',
     });
   }
 };
 
-// Get warranty package by ID
-exports.getWarrantyPackageById = async (req, res) => {
+/**
+ * Lấy gói bảo hành theo ID
+ */
+const getWarrantyPackageById = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -105,7 +113,7 @@ exports.getWarrantyPackageById = async (req, res) => {
     if (!warrantyPackage) {
       return res.status(404).json({
         status: 'error',
-        message: 'Warranty package not found',
+        message: 'Gói bảo hành không tồn tại',
       });
     }
 
@@ -114,22 +122,25 @@ exports.getWarrantyPackageById = async (req, res) => {
       data: warrantyPackage,
     });
   } catch (error) {
-    console.error('Error fetching warranty package:', error);
+    console.error('Lỗi khi lấy gói bảo hành:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Server error',
+      message: 'Lỗi máy chủ',
     });
   }
 };
 
-// Create warranty package
-exports.createWarrantyPackage = async (req, res) => {
+/**
+ * Tạo gói bảo hành (Admin)
+ */
+const createWarrantyPackage = async (req, res) => {
   try {
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
       return res.status(400).json({
         status: 'error',
-        message: 'Validation error',
+        message: 'Lỗi xác thực dữ liệu',
         errors: errors.array(),
       });
     }
@@ -161,22 +172,25 @@ exports.createWarrantyPackage = async (req, res) => {
       data: warrantyPackage,
     });
   } catch (error) {
-    console.error('Error creating warranty package:', error);
+    console.error('Lỗi khi tạo gói bảo hành:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Server error',
+      message: 'Lỗi máy chủ',
     });
   }
 };
 
-// Update warranty package
-exports.updateWarrantyPackage = async (req, res) => {
+/**
+ * Cập nhật gói bảo hành (Admin)
+ */
+const updateWarrantyPackage = async (req, res) => {
   try {
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
       return res.status(400).json({
         status: 'error',
-        message: 'Validation error',
+        message: 'Lỗi xác thực dữ liệu',
         errors: errors.array(),
       });
     }
@@ -198,7 +212,7 @@ exports.updateWarrantyPackage = async (req, res) => {
     if (!warrantyPackage) {
       return res.status(404).json({
         status: 'error',
-        message: 'Warranty package not found',
+        message: 'Không tìm thấy gói bảo hành',
       });
     }
 
@@ -218,16 +232,18 @@ exports.updateWarrantyPackage = async (req, res) => {
       data: warrantyPackage,
     });
   } catch (error) {
-    console.error('Error updating warranty package:', error);
+    console.error('Lỗi khi cập nhật gói bảo hành:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Server error',
+      message: 'Lỗi máy chủ',
     });
   }
 };
 
-// Delete warranty package
-exports.deleteWarrantyPackage = async (req, res) => {
+/**
+ * Xóa gói bảo hành (Admin)
+ */
+const deleteWarrantyPackage = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -236,20 +252,20 @@ exports.deleteWarrantyPackage = async (req, res) => {
     if (!warrantyPackage) {
       return res.status(404).json({
         status: 'error',
-        message: 'Warranty package not found',
+        message: 'Gói bảo hành không tồn tại',
       });
     }
 
-    // Check if warranty package is being used
+    // Kiểm tra xem gói bảo hành có đang được sử dụng không
     const isUsed = await ProductWarranty.findOne({
       where: { warrantyPackageId: id },
     });
 
+    // Nếu đang được sử dụng, không cho xóa
     if (isUsed) {
       return res.status(400).json({
         status: 'error',
-        message:
-          'Cannot delete warranty package that is being used by products',
+        message: 'Không thể xóa gói bảo hành đang được sử dụng bởi sản phẩm',
       });
     }
 
@@ -257,13 +273,22 @@ exports.deleteWarrantyPackage = async (req, res) => {
 
     res.json({
       status: 'success',
-      message: 'Warranty package deleted successfully',
+      message: 'Xóa gói bảo hành thành công',
     });
   } catch (error) {
-    console.error('Error deleting warranty package:', error);
+    console.error('Lỗi khi xóa gói bảo hành:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Server error',
+      message: 'Lỗi máy chủ',
     });
   }
+};
+
+module.exports = {
+  getAllWarrantyPackages,
+  getWarrantyPackagesByProduct,
+  getWarrantyPackageById,
+  createWarrantyPackage,
+  updateWarrantyPackage,
+  deleteWarrantyPackage,
 };

@@ -173,6 +173,15 @@ npm start
 - `GET /api/wishlist/check/:productId` - Kiểm tra sản phẩm có trong danh sách yêu thích
 - `DELETE /api/wishlist` - Xóa tất cả sản phẩm trong danh sách yêu thích
 
+### Warranty Packages
+
+- `GET /api/warranty-packages` - Lấy tất cả gói bảo hành
+- `GET /api/warranty-packages/product/:productId` - Lấy gói bảo hành theo sản phẩm
+- `GET /api/warranty-packages/:id` - Lấy gói bảo hành theo ID
+- `POST /api/warranty-packages` - Tạo gói bảo hành (Admin)
+- `PUT /api/warranty-packages/:id` - Cập nhật gói bảo hành (Admin)
+- `DELETE /api/warranty-packages/:id` - Xóa gói bảo hành (Admin)
+
 ### News
 
 - `GET /api/news` - Lấy tất cả tin tức với phân trang và lọc

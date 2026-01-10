@@ -12,7 +12,8 @@ const { authenticate } = require('../middlewares/authenticate');
 // TẤT CẢ CÁC ROUTE ĐỀU YÊU CẦU XÁC THỰC
 router.use(authenticate);
 
-// Profile routes
+// PROFILE ROUTES
+
 router.put(
   '/profile', // PUT /api/users/profile - Cập nhật thông tin cá nhân
   validateRequest(updateUserSchema),
@@ -24,7 +25,8 @@ router.post(
   userController.changePassword,
 );
 
-// Address routes
+// ADDRESS ROUTES
+
 router.get(
   '/addresses', // GET /api/users/addresses - Lấy danh sách địa chỉ
   userController.getAddresses,
