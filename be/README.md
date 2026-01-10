@@ -171,7 +171,7 @@ npm start
 - `GET /api/wishlist/check/:productId` - Kiểm tra sản phẩm có trong danh sách yêu thích
 - `DELETE /api/wishlist` - Xóa tất cả sản phẩm trong danh sách yêu thích
 
-### Attributes (các thuộc tính phân cấp cho sản phẩm)
+<!-- ### Attributes (các thuộc tính phân cấp cho sản phẩm)
 
 - `GET /api/attributes/groups` - Lấy tất cả các nhóm thuộc tính cùng với các giá trị của chúng
 - `GET /api/attributes/products/:productId/groups` - Lấy các nhóm thuộc tính của một sản phẩm cụ thể
@@ -185,7 +185,7 @@ npm start
 - `POST /api/attributes/preview-name` - Xem trước tên sản phẩm với các thuộc tính đã chọn
 - `GET /api/attributes/name-affecting` - Lấy danh sách các thuộc tính có ảnh hưởng đến tên sản phẩm
 - `POST /api/attributes/batch-generate-names` - Tạo tên sản phẩm hàng loạt dựa trên các mục đã cung cấp
-- `POST /api/attributes/generate-name-realtime` - Tạo tên sản phẩm theo thời gian thực dựa trên tên cơ bản và các thuộc tính đã chọn
+- `POST /api/attributes/generate-name-realtime` - Tạo tên sản phẩm theo thời gian thực dựa trên tên cơ bản và các thuộc tính đã chọn -->
 
 ## Cấu trúc thư mục
 
