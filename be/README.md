@@ -151,6 +151,7 @@ npm start
 - `GET /api/orders/:id` - Lấy chi tiết đơn hàng theo ID
 - `GET /api/orders/number/:number` - Lấy chi tiết đơn hàng theo số đơn hàng
 - `POST /api/orders/:id/cancel` - Hủy đơn hàng
+- `POST /api/orders/:id/repay` - Thanh toán lại đơn hàng
 - `GET /api/orders/admin/all` - Lấy tất cả đơn hàng (Admin)
 - `PATCH /api/orders/admin/:id/status` - Cập nhật trạng thái đơn hàng (Admin)
 

@@ -9,27 +9,49 @@ const {
 const { authenticate } = require('../middlewares/authenticate');
 const { authorize } = require('../middlewares/authorize');
 
-// User routes (authenticated)
-router.use(authenticate);
-router.post(
-  '/',
-  validateRequest(createOrderSchema),
-  orderController.createOrder
-);
-router.get('/', orderController.getUserOrders);
-router.get('/number/:number', orderController.getOrderByNumber);
-router.get('/:id', orderController.getOrderById);
-router.post('/:id/cancel', orderController.cancelOrder);
-router.post('/:id/repay', orderController.repayOrder);
+// USER ROUTES (AUTHENTICATED)
 
-// Admin routes
-router.get('/admin/all', authorize('admin'), orderController.getAllOrders);
+router.use(authenticate);
+
+router.post(
+  '/', // POST /api/orders - Tạo đơn hàng mới
+  validateRequest(createOrderSchema),
+  orderController.createOrder,
+);
+router.get(
+  '/', // GET /api/orders - Lấy danh sách đơn hàng của người dùng
+  orderController.getUserOrders,
+);
+router.get(
+  '/number/:number', // GET /api/orders/number/:number - Lấy chi tiết đơn hàng theo số đơn hàng
+  orderController.getOrderByNumber,
+);
+router.get(
+  '/:id', // GET /api/orders/:id - Lấy chi tiết đơn hàng theo ID
+  orderController.getOrderById,
+);
+router.post(
+  '/:id/cancel', // POST /api/orders/:id/cancel - Hủy đơn hàng
+  orderController.cancelOrder,
+);
+router.post(
+  '/:id/repay', // POST /api/orders/:id/repay - Thanh toán lại đơn hàng
+  orderController.repayOrder,
+);
+
+// ADMIN ROUTES
+
+router.get(
+  '/admin/all', // GET /api/orders/admin/all - Lấy tất cả đơn hàng (Admin)
+  authorize('admin'),
+  orderController.getAllOrders,
+);
 
 router.patch(
-  '/admin/:id/status',
+  '/admin/:id/status', // PATCH /api/orders/admin/:id/status - Cập nhật trạng thái đơn hàng (Admin)
   authorize('admin'),
   validateRequest(updateOrderStatusSchema),
-  orderController.updateOrderStatus
+  orderController.updateOrderStatus,
 );
 
 module.exports = router;
