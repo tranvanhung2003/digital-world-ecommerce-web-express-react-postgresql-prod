@@ -4,20 +4,26 @@ const { v4: uuidv4 } = require('uuid');
 const imageService = require('../services/imageService');
 const { AppError } = require('../middlewares/errorHandler');
 
-// Configure multer for temporary file storage
+/**
+ * Cấu hình multer để lưu trữ file tạm thời
+ */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // Thư mục tạm thời để lưu trữ file trước khi xử lý
     const tempDir = path.join(__dirname, '../../uploads/temp');
     cb(null, tempDir);
   },
   filename: (req, file, cb) => {
+    // Đặt tên file với định dạng: temp_<uuid>.<ext>
     const uniqueSuffix = uuidv4();
     const ext = path.extname(file.originalname);
     cb(null, `temp_${uniqueSuffix}${ext}`);
   },
 });
 
-// File filter for images
+/**
+ * Lọc file để chỉ chấp nhận các định dạng ảnh
+ */
 const fileFilter = (req, file, cb) => {
   const allowedMimes = [
     'image/jpeg',
@@ -31,13 +37,18 @@ const fileFilter = (req, file, cb) => {
     cb(null, true);
   } else {
     cb(
-      new AppError('Only image files are allowed (JPEG, PNG, GIF, WebP)', 400),
-      false
+      new AppError(
+        'Chỉ chấp nhận các định dạng ảnh (JPEG, PNG, GIF, WebP)',
+        400,
+      ),
+      false,
     );
   }
 };
 
-// Multer configuration
+/**
+ * Cấu hình multer với giới hạn kích thước và số lượng file
+ */
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
@@ -48,9 +59,12 @@ const upload = multer({
 });
 
 class ImageController {
-  // Upload single image
+  /**
+   * Tải lên một ảnh
+   */
   async uploadSingle(req, res, next) {
     try {
+      // Sử dụng middleware multer để xử lý upload
       const uploadMiddleware = upload.single('image');
 
       uploadMiddleware(req, res, async (err) => {
@@ -58,16 +72,17 @@ class ImageController {
           if (err instanceof multer.MulterError) {
             if (err.code === 'LIMIT_FILE_SIZE') {
               return next(
-                new AppError('File too large. Maximum size is 10MB', 400)
+                new AppError('File quá lớn. Kích thước tối đa là 10MB', 400),
               );
             }
-            return next(new AppError(`Upload error: ${err.message}`, 400));
+            return next(new AppError(`Lỗi tải lên: ${err.message}`, 400));
           }
           return next(err);
         }
 
+        // Kiểm tra nếu không có file được tải lên
         if (!req.file) {
-          return next(new AppError('No file uploaded', 400));
+          return next(new AppError('Không có file được tải lên', 400));
         }
 
         try {
@@ -83,7 +98,7 @@ class ImageController {
 
           res.status(200).json({
             status: 'success',
-            message: 'Image uploaded successfully',
+            message: 'Ảnh đã được tải lên thành công',
             data: result,
           });
         } catch (error) {
@@ -95,9 +110,12 @@ class ImageController {
     }
   }
 
-  // Upload multiple images
+  /**
+   * Tải lên nhiều ảnh
+   */
   async uploadMultiple(req, res, next) {
     try {
+      // Sử dụng middleware multer để xử lý upload
       const uploadMiddleware = upload.array('images', 10);
 
       uploadMiddleware(req, res, async (err) => {
@@ -105,19 +123,22 @@ class ImageController {
           if (err instanceof multer.MulterError) {
             if (err.code === 'LIMIT_FILE_SIZE') {
               return next(
-                new AppError('File too large. Maximum size is 10MB', 400)
+                new AppError('File quá lớn. Kích thước tối đa là 10MB', 400),
               );
             }
+
             if (err.code === 'LIMIT_FILE_COUNT') {
-              return next(new AppError('Too many files. Maximum is 10', 400));
+              return next(new AppError('Quá nhiều file. Tối đa là 10', 400));
             }
-            return next(new AppError(`Upload error: ${err.message}`, 400));
+
+            return next(new AppError(`Lỗi tải lên: ${err.message}`, 400));
           }
+
           return next(err);
         }
 
         if (!req.files || req.files.length === 0) {
-          return next(new AppError('No files uploaded', 400));
+          return next(new AppError('Không có file được tải lên', 400));
         }
 
         try {
@@ -131,12 +152,12 @@ class ImageController {
 
           const result = await imageService.uploadMultipleImages(
             req.files,
-            options
+            options,
           );
 
           res.status(200).json({
             status: 'success',
-            message: `${result.count.successful} images uploaded successfully`,
+            message: `${result.count.successful} ảnh đã được tải lên thành công`,
             data: result,
           });
         } catch (error) {
@@ -148,10 +169,14 @@ class ImageController {
     }
   }
 
-  // Get image by ID
+  /**
+   * Lấy ảnh theo ID
+   */
   async getImageById(req, res, next) {
     try {
       const { id } = req.params;
+
+      // Lấy ảnh theo ID
       const image = await imageService.getImageById(id);
 
       res.status(200).json({
@@ -166,12 +191,17 @@ class ImageController {
     }
   }
 
-  // Get images by product ID
+  /**
+   * Lấy tất cả ảnh liên quan đến một sản phẩm
+   */
   async getImagesByProductId(req, res, next) {
     try {
       const { productId } = req.params;
+
+      // Lấy tất cả ảnh liên quan đến productId
       const images = await imageService.getImagesByProductId(productId);
 
+      // Thêm URL truy cập vào mỗi ảnh
       const imagesWithUrls = images.map((image) => ({
         ...image.toJSON(),
         url: `/uploads/${image.filePath}`,
@@ -189,7 +219,9 @@ class ImageController {
     }
   }
 
-  // Delete image
+  /**
+   * Xóa một ảnh theo ID
+   */
   async deleteImage(req, res, next) {
     try {
       const { id } = req.params;
@@ -197,20 +229,23 @@ class ImageController {
 
       res.status(200).json({
         status: 'success',
-        message: 'Image deleted successfully',
+        message: 'Ảnh đã được xóa thành công',
       });
     } catch (error) {
       next(error);
     }
   }
 
-  // Convert base64 to file
+  /**
+   * Chuyển đổi dữ liệu ảnh từ base64 thành file
+   */
   async convertBase64(req, res, next) {
     try {
       const { base64Data, category, productId } = req.body;
 
+      // Kiểm tra dữ liệu base64
       if (!base64Data) {
-        return next(new AppError('base64Data is required', 400));
+        return next(new AppError('Dữ liệu base64 là bắt buộc', 400));
       }
 
       const options = {
@@ -221,12 +256,12 @@ class ImageController {
 
       const result = await imageService.convertBase64ToFile(
         base64Data,
-        options
+        options,
       );
 
       res.status(200).json({
         status: 'success',
-        message: 'Base64 converted to file successfully',
+        message: 'Dữ liệu base64 đã được chuyển đổi thành file thành công',
         data: result,
       });
     } catch (error) {
@@ -234,14 +269,16 @@ class ImageController {
     }
   }
 
-  // Cleanup orphaned files
+  /**
+   * Xóa các file ảnh không liên kết trong hệ thống (orphaned files)
+   */
   async cleanupOrphanedFiles(req, res, next) {
     try {
       const result = await imageService.cleanupOrphanedFiles();
 
       res.status(200).json({
         status: 'success',
-        message: 'Orphaned files cleaned up successfully',
+        message: 'Các file ảnh không liên kết đã được xóa thành công',
         data: result,
       });
     } catch (error) {
@@ -249,12 +286,14 @@ class ImageController {
     }
   }
 
-  // Health check for image service
+  /**
+   * Health check cho image service
+   */
   async healthCheck(req, res, next) {
     try {
       res.status(200).json({
         status: 'success',
-        message: 'Image service is healthy',
+        message: 'Image service hoạt động bình thường',
         data: {
           timestamp: new Date().toISOString(),
           version: '1.0.0',

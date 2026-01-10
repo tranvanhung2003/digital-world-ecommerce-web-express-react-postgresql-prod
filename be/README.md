@@ -172,6 +172,17 @@ npm start
 - `GET /api/wishlist/check/:productId` - Kiểm tra sản phẩm có trong danh sách yêu thích
 - `DELETE /api/wishlist` - Xóa tất cả sản phẩm trong danh sách yêu thích
 
+### Images
+
+- `POST /api/images/upload` - Tải lên một ảnh
+- `POST /api/images/upload-multiple` - Tải lên nhiều ảnh
+- `GET /api/images/:id` - Lấy ảnh theo ID
+- `GET /api/images/product/:productId` - Lấy tất cả ảnh liên quan đến một sản phẩm
+- `DELETE /api/images/:id` - Xóa một ảnh theo ID
+- `POST /api/images/convert/base64` - Chuyển đổi dữ liệu ảnh từ base64 thành file
+- `POST /api/images/admin/cleanup` - Xóa các file ảnh không liên kết trong hệ thống (orphaned files)
+- `GET /api/images/health` - Health check cho image service
+
 ### Contact
 
 - `POST /api/contact/newsletter` - Đăng ký nhận bản tin

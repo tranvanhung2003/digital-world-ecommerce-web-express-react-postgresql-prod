@@ -165,12 +165,19 @@ const { adminAuthenticate } = require('../middlewares/adminAuth');
  *                       type: string
  *                       example: "1.0.0"
  */
-router.get('/health', imageController.healthCheck);
+router.get(
+  '/health', // GET /api/images/health - Health check cho image service
+  imageController.healthCheck,
+);
 
-router.post('/upload', authenticate, imageController.uploadSingle);
+router.post(
+  '/upload', // POST /api/images/upload - Tải lên một ảnh
+  authenticate,
+  imageController.uploadSingle,
+);
 
-// Test endpoint without auth (for development only)
-router.post('/test-upload', imageController.uploadSingle);
+// // Endpoint để test mà không cần xác thực (chỉ dành cho development)
+// router.post('/test-upload', imageController.uploadSingle);
 
 /**
  * @swagger
@@ -254,7 +261,11 @@ router.post('/test-upload', imageController.uploadSingle);
  *       401:
  *         description: Not authenticated
  */
-router.post('/upload-multiple', authenticate, imageController.uploadMultiple);
+router.post(
+  '/upload-multiple', // POST /api/images/upload-multiple - Tải lên nhiều ảnh
+  authenticate,
+  imageController.uploadMultiple,
+);
 
 /**
  * @swagger
@@ -286,7 +297,10 @@ router.post('/upload-multiple', authenticate, imageController.uploadMultiple);
  *       404:
  *         description: Image not found
  */
-router.get('/:id', imageController.getImageById);
+router.get(
+  '/:id', // GET /api/images/:id - Lấy ảnh theo ID
+  imageController.getImageById,
+);
 
 /**
  * @swagger
@@ -325,7 +339,10 @@ router.get('/:id', imageController.getImageById);
  *       404:
  *         description: Product not found
  */
-router.get('/product/:productId', imageController.getImagesByProductId);
+router.get(
+  '/product/:productId', // GET /api/images/product/:productId - Lấy tất cả ảnh liên quan đến một sản phẩm
+  imageController.getImagesByProductId,
+);
 
 /**
  * @swagger
@@ -362,7 +379,11 @@ router.get('/product/:productId', imageController.getImagesByProductId);
  *       401:
  *         description: Not authenticated
  */
-router.delete('/:id', authenticate, imageController.deleteImage);
+router.delete(
+  '/:id', // DELETE /api/images/:id - Xóa một ảnh theo ID
+  authenticate,
+  imageController.deleteImage,
+);
 
 /**
  * @swagger
@@ -415,7 +436,11 @@ router.delete('/:id', authenticate, imageController.deleteImage);
  *       401:
  *         description: Not authenticated
  */
-router.post('/convert/base64', authenticate, imageController.convertBase64);
+router.post(
+  '/convert/base64', // POST /api/images/convert/base64 - Chuyển đổi dữ liệu ảnh từ base64 thành file
+  authenticate,
+  imageController.convertBase64,
+);
 
 /**
  * @swagger
@@ -456,10 +481,10 @@ router.post('/convert/base64', authenticate, imageController.convertBase64);
  *         description: Not authorized (Admin only)
  */
 router.post(
-  '/admin/cleanup',
+  '/admin/cleanup', // POST /api/images/admin/cleanup - Xóa các file ảnh không liên kết trong hệ thống (orphaned files)
   authenticate,
   adminAuthenticate,
-  imageController.cleanupOrphanedFiles
+  imageController.cleanupOrphanedFiles,
 );
 
 module.exports = router;
