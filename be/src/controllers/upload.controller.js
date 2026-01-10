@@ -4,34 +4,43 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { AppError } = require('../middlewares/errorHandler');
 
-// Create upload directories if they don't exist
+// Tạo các thư mục upload nếu chúng chưa tồn tại
 const uploadDirs = {
   reviews: path.join(__dirname, '../../uploads/reviews'),
   products: path.join(__dirname, '../../uploads/products'),
   users: path.join(__dirname, '../../uploads/users'),
 };
 
+// Đảm bảo các thư mục tồn tại bằng cách tạo chúng nếu chưa có
 Object.values(uploadDirs).forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 });
 
-// Storage configuration
+/**
+ * Cấu hình multer để lưu trữ file
+ */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadType = req.params.type || 'general';
+
     const uploadPath = uploadDirs[uploadType] || uploadDirs.products;
+
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = uuidv4();
+
     const ext = path.extname(file.originalname);
+
     cb(null, `${uniqueSuffix}${ext}`);
   },
 });
 
-// File filter for images
+/**
+ * Lọc file để chỉ chấp nhận các định dạng ảnh
+ */
 const fileFilter = (req, file, cb) => {
   const allowedMimes = [
     'image/jpeg',
@@ -46,12 +55,14 @@ const fileFilter = (req, file, cb) => {
   } else {
     cb(
       new AppError('Chỉ chấp nhận file ảnh (JPEG, PNG, GIF, WebP)', 400),
-      false
+      false,
     );
   }
 };
 
-// Multer configuration
+/**
+ * Cấu hình multer với giới hạn kích thước và số lượng file
+ */
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
@@ -61,12 +72,14 @@ const upload = multer({
   },
 });
 
-// Upload single file
+/**
+ * Tải lên một ảnh
+ */
 const uploadSingle = async (req, res, next) => {
   try {
     const uploadType = req.params.type || 'general';
 
-    // Use multer middleware
+    // Sử dụng middleware multer để xử lý upload
     const uploadMiddleware = upload.single('file');
 
     uploadMiddleware(req, res, (err) => {
@@ -74,11 +87,13 @@ const uploadSingle = async (req, res, next) => {
         if (err instanceof multer.MulterError) {
           if (err.code === 'LIMIT_FILE_SIZE') {
             return next(
-              new AppError('File quá lớn. Kích thước tối đa 5MB', 400)
+              new AppError('File quá lớn. Kích thước tối đa 5MB', 400),
             );
           }
+
           return next(new AppError(`Lỗi upload: ${err.message}`, 400));
         }
+
         return next(err);
       }
 
@@ -86,7 +101,7 @@ const uploadSingle = async (req, res, next) => {
         return next(new AppError('Không có file được upload', 400));
       }
 
-      // Generate URL for the uploaded file
+      // Tạo URL cho file đã tải lên
       const fileUrl = `/uploads/${uploadType}/${req.file.filename}`;
 
       res.status(200).json({
@@ -106,13 +121,15 @@ const uploadSingle = async (req, res, next) => {
   }
 };
 
-// Upload multiple files
+/**
+ * Tải lên nhiều ảnh
+ */
 const uploadMultiple = async (req, res, next) => {
   try {
     const uploadType = req.params.type || 'general';
     const maxFiles = uploadType === 'reviews' ? 5 : 10;
 
-    // Use multer middleware for multiple files
+    // Sử dụng middleware multer để xử lý upload nhiều file
     const uploadMiddleware = upload.array('files', maxFiles);
 
     uploadMiddleware(req, res, (err) => {
@@ -120,16 +137,19 @@ const uploadMultiple = async (req, res, next) => {
         if (err instanceof multer.MulterError) {
           if (err.code === 'LIMIT_FILE_SIZE') {
             return next(
-              new AppError('File quá lớn. Kích thước tối đa 5MB', 400)
+              new AppError('File quá lớn. Kích thước tối đa 5MB', 400),
             );
           }
+
           if (err.code === 'LIMIT_FILE_COUNT') {
             return next(
-              new AppError(`Số lượng file tối đa là ${maxFiles}`, 400)
+              new AppError(`Số lượng file tối đa là ${maxFiles}`, 400),
             );
           }
+
           return next(new AppError(`Lỗi upload: ${err.message}`, 400));
         }
+
         return next(err);
       }
 
@@ -137,7 +157,7 @@ const uploadMultiple = async (req, res, next) => {
         return next(new AppError('Không có file được upload', 400));
       }
 
-      // Generate URLs for uploaded files
+      // Tạo URL cho các file đã tải lên
       const files = req.files.map((file) => ({
         filename: file.filename,
         originalName: file.originalname,
@@ -160,23 +180,27 @@ const uploadMultiple = async (req, res, next) => {
   }
 };
 
-// Delete uploaded file
+/**
+ * Xóa ảnh đã tải lên
+ */
 const deleteFile = async (req, res, next) => {
   try {
     const { type, filename } = req.params;
 
+    // Kiểm tra loại file hợp lệ
     if (!uploadDirs[type]) {
       throw new AppError('Loại file không hợp lệ', 400);
     }
 
+    // Tạo đường dẫn đầy đủ đến file
     const filePath = path.join(uploadDirs[type], filename);
 
-    // Check if file exists
+    // Kiểm tra nếu file không tồn tại
     if (!fs.existsSync(filePath)) {
       throw new AppError('File không tồn tại', 404);
     }
 
-    // Delete file
+    // Xóa file
     fs.unlinkSync(filePath);
 
     res.status(200).json({
@@ -192,5 +216,5 @@ module.exports = {
   uploadSingle,
   uploadMultiple,
   deleteFile,
-  upload, // Export multer instance for use in other controllers
+  upload, // Xuất instance multer để có thể sử dụng ở controller khác nếu cần
 };

@@ -77,7 +77,11 @@ const { authenticate } = require('../middlewares/authenticate');
  *       401:
  *         description: Not authenticated
  */
-router.post('/:type/single', authenticate, uploadController.uploadSingle);
+router.post(
+  '/:type/single', // POST /api/upload/:type/single - Tải lên một ảnh
+  authenticate,
+  uploadController.uploadSingle,
+);
 
 /**
  * @swagger
@@ -136,7 +140,11 @@ router.post('/:type/single', authenticate, uploadController.uploadSingle);
  *       401:
  *         description: Not authenticated
  */
-router.post('/:type/multiple', authenticate, uploadController.uploadMultiple);
+router.post(
+  '/:type/multiple', // POST /api/upload/:type/multiple - Tải lên nhiều ảnh
+  authenticate,
+  uploadController.uploadMultiple,
+);
 
 /**
  * @swagger
@@ -168,6 +176,10 @@ router.post('/:type/multiple', authenticate, uploadController.uploadMultiple);
  *       401:
  *         description: Not authenticated
  */
-router.delete('/:type/:filename', authenticate, uploadController.deleteFile);
+router.delete(
+  '/:type/:filename', // DELETE /api/upload/:type/:filename - Xóa ảnh đã tải lên
+  authenticate,
+  uploadController.deleteFile,
+);
 
 module.exports = router;

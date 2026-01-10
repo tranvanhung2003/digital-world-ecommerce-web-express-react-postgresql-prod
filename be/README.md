@@ -194,6 +194,12 @@ npm start
 - `POST /api/images/admin/cleanup` - Xóa các file ảnh không liên kết trong hệ thống (orphaned files)
 - `GET /api/images/health` - Health check cho image service
 
+### Uploads
+
+- `POST /api/upload/:type/single` - Tải lên một ảnh
+- `POST /api/upload/:type/multiple` - Tải lên nhiều ảnh
+- `DELETE /api/upload/:type/:filename` - Xóa ảnh đã tải lên
+
 ### Contact
 
 - `POST /api/contact/newsletter` - Đăng ký nhận bản tin
