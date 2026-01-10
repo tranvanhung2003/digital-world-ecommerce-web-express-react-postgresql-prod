@@ -172,6 +172,11 @@ npm start
 - `GET /api/wishlist/check/:productId` - Kiểm tra sản phẩm có trong danh sách yêu thích
 - `DELETE /api/wishlist` - Xóa tất cả sản phẩm trong danh sách yêu thích
 
+### Contact
+
+- `POST /api/contact/newsletter` - Đăng ký nhận bản tin
+- `POST /api/contact/feedback` - Gửi phản hồi
+
 <!-- ### Attributes (các thuộc tính phân cấp cho sản phẩm)
 
 - `GET /api/attributes/groups` - Lấy tất cả các nhóm thuộc tính cùng với các giá trị của chúng

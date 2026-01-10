@@ -3,47 +3,55 @@ const { catchAsync } = require('../utils/catchAsync');
 const { AppError } = require('../middlewares/errorHandler');
 
 /**
- * Subscribe to newsletter
+ * Đăng ký nhận bản tin
  */
 const subscribeNewsletter = catchAsync(async (req, res) => {
   const { email } = req.body;
 
+  // Nếu không có email thì báo lỗi
   if (!email) {
-    throw new AppError('Email is required', 400);
+    throw new AppError('Email là bắt buộc', 400);
   }
 
-  // Find or create subscriber
+  // Tìm hoặc tạo người đăng ký
   const [subscriber, created] = await NewsletterSubscriber.findOrCreate({
     where: { email },
     defaults: { status: 'active' },
   });
 
+  // Nếu người dùng đã đăng ký và trạng thái là active
   if (!created && subscriber.status === 'active') {
     return res.status(200).json({
       status: 'success',
-      message: 'You are already subscribed to our newsletter.',
+      message: 'Bạn đã đăng ký nhận bản tin của chúng tôi.',
     });
   }
 
+  // Nếu người dùng đã từng hủy đăng ký, cập nhật trạng thái lại thành active
   if (subscriber.status === 'unsubscribed') {
     subscriber.status = 'active';
+
+    // Lưu thay đổi
     await subscriber.save();
   }
 
   res.status(200).json({
     status: 'success',
-    message: 'Thank you for subscribing to our newsletter!',
+    message: 'Cảm ơn bạn đã đăng ký nhận bản tin của chúng tôi!',
   });
 });
 
 /**
- * Submit feedback
+ * Gửi phản hồi
  */
 const sendFeedback = catchAsync(async (req, res) => {
   const { name, email, phone, subject, content } = req.body;
 
   if (!name || !email || !subject || !content) {
-    throw new AppError('Please provide all required fields (name, email, subject, content)', 400);
+    throw new AppError(
+      'Vui lòng cung cấp đầy đủ các trường bắt buộc (tên, email, chủ đề, nội dung)',
+      400,
+    );
   }
 
   const feedback = await Feedback.create({
@@ -57,7 +65,7 @@ const sendFeedback = catchAsync(async (req, res) => {
 
   res.status(201).json({
     status: 'success',
-    message: 'Thank you for your feedback. We will review it soon!',
+    message: 'Cảm ơn bạn đã gửi phản hồi. Chúng tôi sẽ xem xét sớm!',
     data: feedback,
   });
 });
