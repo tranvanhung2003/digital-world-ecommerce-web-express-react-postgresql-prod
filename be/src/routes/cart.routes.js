@@ -71,7 +71,8 @@ const { optionalAuthenticate } = require('../middlewares/authenticate');
  *               type: integer
  */
 
-// All routes use optional authentication to handle both guest and logged-in users
+// Tất cả các route sử dụng optional authentication
+// để xử lý cả guest (khách vãng lai) và người dùng đã đăng nhập
 router.use(optionalAuthenticate);
 
 /**
@@ -107,7 +108,10 @@ router.use(optionalAuthenticate);
  *                     subtotal:
  *                       type: number
  */
-router.get('/', cartController.getCart);
+router.get(
+  '/', // GET /api/cart - Lấy giỏ hàng
+  cartController.getCart,
+);
 
 /**
  * @swagger
@@ -134,7 +138,10 @@ router.get('/', cartController.getCart);
  *                     count:
  *                       type: integer
  */
-router.get('/count', cartController.getCartCount);
+router.get(
+  '/count', // GET /api/cart/count - Lấy số lượng sản phẩm trong giỏ hàng
+  cartController.getCartCount,
+);
 
 /**
  * @swagger
@@ -168,7 +175,11 @@ router.get('/count', cartController.getCartCount);
  *       404:
  *         description: Product not found
  */
-router.post('/', validateRequest(addToCartSchema), cartController.addToCart);
+router.post(
+  '/', // POST /api/cart - Thêm sản phẩm vào giỏ hàng
+  validateRequest(addToCartSchema),
+  cartController.addToCart,
+);
 
 /**
  * @swagger
@@ -215,7 +226,11 @@ router.post('/', validateRequest(addToCartSchema), cartController.addToCart);
  *       400:
  *         description: Invalid input
  */
-router.post('/sync', validateRequest(syncCartSchema), cartController.syncCart);
+router.post(
+  '/sync', // POST /api/cart/sync - Sync giỏ hàng từ local storage lên server
+  validateRequest(syncCartSchema),
+  cartController.syncCart,
+);
 
 /**
  * @swagger
@@ -231,7 +246,10 @@ router.post('/sync', validateRequest(syncCartSchema), cartController.syncCart);
  *       401:
  *         description: User not authenticated
  */
-router.post('/merge', cartController.mergeCart);
+router.post(
+  '/merge', // POST /api/cart/merge - Gộp giỏ hàng của guest vào giỏ hàng người dùng (khi người dùng đăng nhập)
+  cartController.mergeCart,
+);
 
 /**
  * @swagger
@@ -271,7 +289,7 @@ router.post('/merge', cartController.mergeCart);
  *         description: Cart item not found
  */
 router.put(
-  '/items/:id',
+  '/items/:id', // PUT /api/cart/items/:id - Cập nhật số lượng sản phẩm
   validateRequest(updateCartItemSchema),
   cartController.updateCartItem,
 );
@@ -299,7 +317,10 @@ router.put(
  *       404:
  *         description: Cart item not found
  */
-router.delete('/items/:id', cartController.removeCartItem);
+router.delete(
+  '/items/:id', // DELETE /api/cart/items/:id - Xóa sản phẩm khỏi giỏ hàng
+  cartController.removeCartItem,
+);
 
 /**
  * @swagger
@@ -313,6 +334,9 @@ router.delete('/items/:id', cartController.removeCartItem);
  *       200:
  *         description: Cart cleared
  */
-router.delete('/', cartController.clearCart);
+router.delete(
+  '/', // DELETE /api/cart - Xóa tất cả sản phẩm trong giỏ hàng
+  cartController.clearCart,
+);
 
 module.exports = router;

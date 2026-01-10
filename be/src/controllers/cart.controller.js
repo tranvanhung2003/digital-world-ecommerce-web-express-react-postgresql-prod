@@ -17,7 +17,7 @@ const getCart = async (req, res, next) => {
     let cart;
 
     if (req.user) {
-      // User đã đăng nhập - lấy hoặc tạo giỏ hàng
+      // Case người dùng đã đăng nhập - lấy hoặc tạo giỏ hàng
       [cart] = await Cart.findOrCreate({
         where: {
           userId: req.user.id,
@@ -28,7 +28,7 @@ const getCart = async (req, res, next) => {
         },
       });
     } else {
-      // Người dùng chưa đăng nhập - lấy hoặc tạo giỏ hàng theo session ID
+      // Case người dùng chưa đăng nhập - lấy hoặc tạo giỏ hàng theo session ID
       const { sessionId } = req.cookies;
 
       // Nếu không có sessionId, trả về giỏ hàng trống
@@ -608,7 +608,7 @@ const syncCart = async (req, res, next) => {
       const product = await Product.findByPk(productId);
 
       // Kiểm tra sản phẩm có tồn tại và còn hàng không
-      // Nếu không, bỏ qua mục này
+      // Nếu không, bỏ qua item này
       if (!product || !product.inStock) {
         continue;
       }
@@ -621,7 +621,7 @@ const syncCart = async (req, res, next) => {
           where: { id: variantId, productId },
         });
 
-        // Nếu biến thể không tồn tại, bỏ qua mục này
+        // Nếu biến thể không tồn tại, bỏ qua item này
         if (!variant) {
           continue;
         }
@@ -642,6 +642,8 @@ const syncCart = async (req, res, next) => {
           );
         }
       } else {
+        // Case sản phẩm không có biến thể
+
         // Lấy số lượng thực tế có thể thêm vào giỏ hàng dựa trên MIN của số lượng yêu cầu và tồn kho
         const actualQuantity = Math.min(quantity, product.stockQuantity);
         if (actualQuantity > 0) {
