@@ -5,10 +5,14 @@ const {
   ProductVariant,
   ProductSpecification,
   Review,
+  OrderItem,
+  Order,
+  ProductCategory,
   sequelize,
 } = require('../models');
 const { AppError } = require('../middlewares/errorHandler');
 const { Op } = require('sequelize');
+const { getField, getTableName } = require('../utils/helpers');
 
 /**
  * Lấy tất cả sản phẩm
@@ -29,11 +33,13 @@ const getAllProducts = async (req, res, next) => {
       status,
     } = req.query;
 
-    // Build filter conditions
+    // Xây dựng điều kiện lọc
     const whereConditions = {};
+
+    // Xây dựng điều kiện include
     const includeConditions = [];
 
-    // Search filter
+    // Filter tìm kiếm
     if (search) {
       whereConditions[Op.or] = [
         { name: { [Op.iLike]: `%${search}%` } },
@@ -44,14 +50,13 @@ const getAllProducts = async (req, res, next) => {
       ];
     }
 
-    // Price filter
+    // Filter khoảng giá
     if (minPrice) {
       whereConditions.price = {
         ...whereConditions.price,
         [Op.gte]: parseFloat(minPrice),
       };
     }
-
     if (maxPrice) {
       whereConditions.price = {
         ...whereConditions.price,
@@ -59,24 +64,24 @@ const getAllProducts = async (req, res, next) => {
       };
     }
 
-    // Stock filter
+    // Filter các sản phẩm còn hàng
     if (inStock !== undefined) {
       whereConditions.inStock = inStock === 'true';
     }
 
-    // Featured filter
+    // Filter sản phẩm nổi bật
     if (featured !== undefined) {
       whereConditions.featured = featured === 'true';
     }
 
-    // Status filter - mặc định chỉ lấy sản phẩm active
+    // Filter trạng thái sản phẩm - mặc định là 'active'
     if (status !== undefined) {
       whereConditions.status = status;
     } else {
       whereConditions.status = 'active';
     }
 
-    // Category filter
+    // Filter theo danh mục
     if (category) {
       // Kiểm tra xem category có phải là UUID hợp lệ không
       const isValidUUID =
@@ -100,31 +105,32 @@ const getAllProducts = async (req, res, next) => {
         });
       }
     } else {
+      // Nếu không lọc theo danh mục, vẫn include để lấy thông tin danh mục
       includeConditions.push({
         association: 'categories',
         through: { attributes: [] },
       });
     }
 
-    // Include attributes for product details (not for filtering)
+    // Include các thuộc tính sản phẩm
     includeConditions.push({
       association: 'attributes',
       required: false,
     });
 
-    // Include variants for price range calculation
+    // Include các biến thể sản phẩm
     includeConditions.push({
       association: 'variants',
       required: false,
     });
 
-    // Include reviews for ratings
+    // Include các đánh giá để tính điểm đánh giá
     includeConditions.push({
       association: 'reviews',
       attributes: ['rating'],
     });
 
-    // Get products
+    // Lấy danh sách sản phẩm với phân trang và sắp xếp
     const { count, rows: productsRaw } = await Product.findAndCountAll({
       where: whereConditions,
       include: includeConditions,
@@ -134,11 +140,11 @@ const getAllProducts = async (req, res, next) => {
       order: [[sort, order]],
     });
 
-    // Process products to add ratings
+    // Xử lý sản phẩm để thêm rating
     const products = productsRaw.map((product) => {
       const productJson = product.toJSON();
 
-      // Calculate average rating
+      // Tính rating trung bình
       const ratings = {
         average: 0,
         count: 0,
@@ -149,25 +155,28 @@ const getAllProducts = async (req, res, next) => {
           (sum, review) => sum + review.rating,
           0,
         );
+
         ratings.average = parseFloat(
           (totalRating / productJson.reviews.length).toFixed(1),
         );
+
         ratings.count = productJson.reviews.length;
       }
 
-      // Use variant price if available, otherwise use product price
+      // Sử dụng giá biến thể nếu có, ngược lại sử dụng giá sản phẩm
       let displayPrice = parseFloat(productJson.price) || 0;
       let compareAtPrice = parseFloat(productJson.compareAtPrice) || null;
 
       if (productJson.variants && productJson.variants.length > 0) {
-        // Sort variants by price (ascending) to get the lowest price first
+        // Sắp xếp các biến thể theo giá (tăng dần) để có giá thấp nhất trước
         const sortedVariants = productJson.variants.sort(
           (a, b) => parseFloat(a.price) - parseFloat(b.price),
         );
+
         displayPrice = parseFloat(sortedVariants[0].price) || displayPrice;
       }
 
-      // Add ratings and remove reviews from response
+      // Xóa phần đánh giá vì đã tính toán điểm đánh giá, không cần thiết trong response nữa
       delete productJson.reviews;
 
       return {
@@ -239,10 +248,10 @@ const getProductById = async (req, res, next) => {
       throw new AppError('Không tìm thấy sản phẩm', 404);
     }
 
-    // Process product to add ratings calculation
+    // Xử lý sản phẩm để thêm tính toán rating
     const productJson = product.toJSON();
 
-    // Calculate average rating
+    // Tính rating trung bình
     const ratings = {
       average: 0,
       count: 0,
@@ -253,13 +262,15 @@ const getProductById = async (req, res, next) => {
         (sum, review) => sum + review.rating,
         0,
       );
+
       ratings.average = parseFloat(
         (totalRating / productJson.reviews.length).toFixed(1),
       );
+
       ratings.count = productJson.reviews.length;
     }
 
-    // Add ratings to product data
+    // Thêm rating vào dữ liệu sản phẩm
     const productWithRatings = {
       ...productJson,
       ratings,
@@ -322,10 +333,10 @@ const getProductBySlug = async (req, res, next) => {
       throw new AppError('Không tìm thấy sản phẩm', 404);
     }
 
-    // Process product to add ratings calculation
+    // Xử lý sản phẩm để thêm tính toán rating
     const productJson = product.toJSON();
 
-    // Calculate average rating
+    // Tính rating trung bình
     const ratings = {
       average: 0,
       count: 0,
@@ -336,31 +347,37 @@ const getProductBySlug = async (req, res, next) => {
         (sum, review) => sum + review.rating,
         0,
       );
+
       ratings.average = parseFloat(
         (totalRating / productJson.reviews.length).toFixed(1),
       );
+
       ratings.count = productJson.reviews.length;
     }
 
-    // Handle variant-based product
     let responseData = {
       ...productJson,
       ratings,
     };
 
+    // Nếu là sản phẩm có biến thể thì cần xử lý thêm phần biến thể
+    // Nếu sản phẩm không có biến thể thì không cần xử lý gì thêm
     if (
       productJson.isVariantProduct &&
       productJson.variants &&
       productJson.variants.length > 0
     ) {
-      // Find selected variant
+      // Case sản phẩm có biến thể
+
       let selectedVariant = null;
 
+      // Nếu skuId được cung cấp, tìm biến thể tương ứng
       if (skuId) {
         selectedVariant = productJson.variants.find((v) => v.id === skuId);
       }
 
-      // If no variant found by skuId, use default or first variant
+      // Nếu skuId không được cung cấp hoặc không tìm thấy biến thể tương ứng với skuId
+      // thì lấy biến thể mặc định hoặc biến thể đầu tiên
       if (!selectedVariant) {
         selectedVariant =
           productJson.variants.find((v) => v.isDefault) ||
@@ -368,10 +385,12 @@ const getProductBySlug = async (req, res, next) => {
       }
 
       if (selectedVariant) {
-        // Override product data with variant data
+        // Ghi đè dữ liệu sản phẩm bằng dữ liệu biến thể đã chọn
+
         responseData = {
           ...responseData,
-          // Current variant info
+
+          // Thông tin biến thể hiện tại được chọn
           currentVariant: {
             id: selectedVariant.id,
             name: selectedVariant.variantName,
@@ -389,7 +408,8 @@ const getProductBySlug = async (req, res, next) => {
                 ? selectedVariant.images
                 : productJson.images,
           },
-          // All available variants
+
+          // Tất cả các biến thể có sẵn để lựa chọn trên giao diện
           availableVariants: productJson.variants.map((v) => ({
             id: v.id,
             name: v.variantName,
@@ -399,7 +419,8 @@ const getProductBySlug = async (req, res, next) => {
             isDefault: v.isDefault,
             sku: v.sku,
           })),
-          // Override main product fields with selected variant
+
+          // Ghi đè các trường sản phẩm chính bằng biến thể đã chọn
           name: `${productJson.baseName || productJson.name} - ${selectedVariant.variantName}`,
           price: selectedVariant.price,
           compareAtPrice: selectedVariant.compareAtPrice,
@@ -457,22 +478,22 @@ const createProduct = async (req, res, next) => {
       warrantyPackageIds,
     } = req.body;
 
-    // Determine if this is a variant product
+    // Xác định xem đây có phải là sản phẩm có biến thể không
     const isVariantProduct = variants && variants.length > 0;
 
-    // Create product
+    // Tạo sản phẩm
     const product = await Product.create(
       {
         name,
         baseName: baseName || name,
         description,
         shortDescription,
-        price: isVariantProduct ? 0 : price, // Set to 0 if using variants
-        compareAtPrice: isVariantProduct ? null : compareAtPrice,
+        price: isVariantProduct ? 0 : price, // Đặt là 0 nếu là sản phẩm có biến thể
+        compareAtPrice: isVariantProduct ? null : compareAtPrice, // Đặt là null nếu là sản phẩm có biến thể
         images: images || [],
         thumbnail,
-        inStock: isVariantProduct ? true : inStock, // Always true for variant products
-        stockQuantity: isVariantProduct ? 0 : stockQuantity, // Set to 0 if using variants
+        inStock: isVariantProduct ? true : inStock, // Luôn luôn true đối với sản phẩm có biến thể
+        stockQuantity: isVariantProduct ? 0 : stockQuantity, // Đặt là 0 nếu là sản phẩm có biến thể
         featured,
         searchKeywords: searchKeywords || [],
         seoTitle,
@@ -484,12 +505,13 @@ const createProduct = async (req, res, next) => {
       { transaction },
     );
 
-    // Add categories
+    // Thêm danh mục
     if (categoryIds && categoryIds.length > 0) {
       const categories = await Category.findAll({
         where: { id: { [Op.in]: categoryIds } },
       });
 
+      // Kiểm tra xem các danh mục có tồn tại không
       if (categories.length !== categoryIds.length) {
         throw new AppError('Một hoặc nhiều danh mục không tồn tại', 400);
       }
@@ -497,7 +519,7 @@ const createProduct = async (req, res, next) => {
       await product.setCategories(categories, { transaction });
     }
 
-    // Add specifications
+    // Thêm thông số kỹ thuật
     if (specifications && specifications.length > 0) {
       const productSpecifications = specifications.map((spec, index) => ({
         productId: product.id,
@@ -512,7 +534,7 @@ const createProduct = async (req, res, next) => {
       });
     }
 
-    // Add parent attributes
+    // Thêm các thuộc tính
     if (parentAttributes && parentAttributes.length > 0) {
       const productParentAttributes = parentAttributes.map((attr, index) => ({
         productId: product.id,
@@ -528,7 +550,8 @@ const createProduct = async (req, res, next) => {
       });
     }
 
-    // Add legacy attributes (for backward compatibility)
+    // Thêm thuộc tính (để tương thích ngược với version cũ)
+    // Version cũ dùng attributes, version mới dùng parentAttributes
     if (attributes && attributes.length > 0) {
       const productAttributes = attributes.map((attr) => ({
         ...attr,
@@ -538,7 +561,7 @@ const createProduct = async (req, res, next) => {
       await ProductAttribute.bulkCreate(productAttributes, { transaction });
     }
 
-    // Add variants
+    // Thêm các biến thể
     if (variants && variants.length > 0) {
       const productVariants = variants.map((variant, index) => ({
         productId: product.id,
@@ -549,7 +572,8 @@ const createProduct = async (req, res, next) => {
           ? parseFloat(variant.compareAtPrice)
           : null,
         stockQuantity: parseInt(variant.stockQuantity || variant.stock) || 0,
-        isDefault: variant.isDefault || index === 0, // First variant is default
+        // Đặt isDefault cho biến thể đầu tiên nếu không có biến thể nào được đánh dấu là mặc định
+        isDefault: variant.isDefault || index === 0,
         isAvailable: variant.isAvailable !== false,
         attributes: variant.attributes || {},
         attributeValues: variant.attributeValues || {},
@@ -562,13 +586,14 @@ const createProduct = async (req, res, next) => {
       await ProductVariant.bulkCreate(productVariants, { transaction });
     }
 
-    // Add warranty packages
+    // Thêm các gói bảo hành
     if (warrantyPackageIds && warrantyPackageIds.length > 0) {
       const { WarrantyPackage } = require('../models');
       const warranties = await WarrantyPackage.findAll({
         where: { id: { [Op.in]: warrantyPackageIds } },
       });
 
+      // Kiểm tra xem các gói bảo hành có tồn tại không
       if (warranties.length !== warrantyPackageIds.length) {
         throw new AppError('Một hoặc nhiều gói bảo hành không tồn tại', 400);
       }
@@ -578,7 +603,7 @@ const createProduct = async (req, res, next) => {
 
     await transaction.commit();
 
-    // Get complete product with associations
+    // Lấy thông tin sản phẩm vừa mới tạo cùng với các quan hệ
     const createdProduct = await Product.findByPk(product.id, {
       include: [
         {
@@ -645,20 +670,13 @@ const updateProduct = async (req, res, next) => {
       warrantyPackageIds,
     } = req.body;
 
-    // Debug request body
-    console.log('UpdateProduct request body:', {
-      compareAtPrice,
-      hasCompareAtPrice: req.body.hasOwnProperty('compareAtPrice'),
-      // Note: comparePrice is not a valid field in the Product model
-    });
-
-    // Find product
+    // Tìm sản phẩm
     const product = await Product.findByPk(id);
     if (!product) {
       throw new AppError('Không tìm thấy sản phẩm', 404);
     }
 
-    // Update product - chỉ cập nhật các trường có trong request
+    // Các trường dữ liệu sẽ được cập nhật
     const updateData = {};
 
     // Chỉ cập nhật các trường có trong request body
@@ -670,7 +688,6 @@ const updateProduct = async (req, res, next) => {
     if (req.body.hasOwnProperty('price')) updateData.price = price;
     if (req.body.hasOwnProperty('compareAtPrice'))
       updateData.compareAtPrice = compareAtPrice;
-    // Removed comparePrice update as it's not in the Product model
     if (req.body.hasOwnProperty('images')) updateData.images = images;
     if (req.body.hasOwnProperty('thumbnail')) updateData.thumbnail = thumbnail;
     if (req.body.hasOwnProperty('inStock')) updateData.inStock = inStock;
@@ -688,7 +705,7 @@ const updateProduct = async (req, res, next) => {
     // Cập nhật sản phẩm với dữ liệu mới
     await product.update(updateData, { transaction });
 
-    // Update categories - chỉ khi categoryIds được gửi trong request
+    // Cập nhật danh mục - chỉ khi categoryIds được gửi trong request
     if (req.body.hasOwnProperty('categoryIds') && categoryIds) {
       const categories = await Category.findAll({
         where: { id: { [Op.in]: categoryIds } },
@@ -701,15 +718,15 @@ const updateProduct = async (req, res, next) => {
       await product.setCategories(categories, { transaction });
     }
 
-    // Update attributes - chỉ khi attributes được gửi trong request
+    // Cập nhật thuộc tính - chỉ khi attributes được gửi trong request
     if (req.body.hasOwnProperty('attributes')) {
-      // Delete existing attributes
+      // Xóa các thuộc tính hiện có của sản phẩm này
       await ProductAttribute.destroy({
         where: { productId: id },
         transaction,
       });
 
-      // Create new attributes
+      // Tạo các thuộc tính mới
       if (attributes && attributes.length > 0) {
         const productAttributes = attributes.map((attr) => ({
           ...attr,
@@ -720,15 +737,15 @@ const updateProduct = async (req, res, next) => {
       }
     }
 
-    // Update variants - chỉ khi variants được gửi trong request
+    // Cập nhật các biến thể sản phẩm - chỉ khi variants được gửi trong request
     if (req.body.hasOwnProperty('variants')) {
-      // Delete existing variants
+      // Xóa các biến thể hiện có của sản phẩm này
       await ProductVariant.destroy({
         where: { productId: id },
         transaction,
       });
 
-      // Create new variants
+      // Tạo các biến thể mới
       if (variants && variants.length > 0) {
         const productVariants = variants.map((variant) => ({
           ...variant,
@@ -739,49 +756,34 @@ const updateProduct = async (req, res, next) => {
       }
     }
 
-    // Update warranty packages - chỉ khi warrantyPackageIds được gửi trong request
+    // Cập nhật các gói bảo hành - chỉ khi warrantyPackageIds được gửi trong request
     if (req.body.hasOwnProperty('warrantyPackageIds')) {
-      console.log('🛡️ Processing warranty packages:', warrantyPackageIds);
+      // Có 2 case: cập nhật các gói bảo hành mới hoặc xóa tất cả gói bảo hành
 
       if (warrantyPackageIds && warrantyPackageIds.length > 0) {
-        // Verify warranty packages exist
+        // Case cập nhật các gói bảo hành mới
+
         const { WarrantyPackage } = require('../models');
+
         const warranties = await WarrantyPackage.findAll({
           where: { id: { [Op.in]: warrantyPackageIds } },
         });
 
-        console.log(
-          '✅ Found warranties:',
-          warranties.map((w) => ({ id: w.id, name: w.name })),
-        );
-        console.log(
-          '📊 Expected:',
-          warrantyPackageIds.length,
-          'Found:',
-          warranties.length,
-        );
-
         if (warranties.length !== warrantyPackageIds.length) {
-          console.log('❌ Warranty package count mismatch!');
           throw new AppError('Một hoặc nhiều gói bảo hành không tồn tại', 400);
         }
 
         await product.setWarrantyPackages(warranties, { transaction });
-        console.log('💾 Warranty packages updated successfully');
       } else {
-        // Remove all warranty packages if empty array is sent
-        console.log('🗑️ Removing all warranty packages');
+        // Case xóa tất cả gói bảo hành
+
         await product.setWarrantyPackages([], { transaction });
       }
-    } else {
-      console.log(
-        '⏭️ No warrantyPackageIds in request, skipping warranty update',
-      );
     }
 
     await transaction.commit();
 
-    // Get updated product with associations
+    // Lấy thông tin sản phẩm vừa mới cập nhật cùng với các quan hệ
     const updatedProduct = await Product.findByPk(id, {
       include: [
         {
@@ -823,13 +825,14 @@ const deleteProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Find product
+    // Tìm sản phẩm
     const product = await Product.findByPk(id);
+
     if (!product) {
       throw new AppError('Không tìm thấy sản phẩm', 404);
     }
 
-    // Delete product
+    // Xóa sản phẩm
     await product.destroy();
 
     res.status(200).json({
@@ -868,11 +871,11 @@ const getFeaturedProducts = async (req, res, next) => {
       order: [['createdAt', 'DESC']],
     });
 
-    // Process products to add ratings
+    // Thêm ratings vào các sản phẩm
     const products = productsRaw.map((product) => {
       const productJson = product.toJSON();
 
-      // Calculate average rating
+      // Tính rating trung bình
       const ratings = {
         average: 0,
         count: 0,
@@ -883,25 +886,29 @@ const getFeaturedProducts = async (req, res, next) => {
           (sum, review) => sum + review.rating,
           0,
         );
+
         ratings.average = parseFloat(
           (totalRating / productJson.reviews.length).toFixed(1),
         );
+
         ratings.count = productJson.reviews.length;
       }
 
-      // Use variant price if available, otherwise use product price
+      // Sử dụng giá variant nếu có, nếu không thì sử dụng giá sản phẩm
       let displayPrice = parseFloat(productJson.price) || 0;
       let compareAtPrice = parseFloat(productJson.compareAtPrice) || null;
 
       if (productJson.variants && productJson.variants.length > 0) {
-        // Sort variants by price (ascending) to get the lowest price first
+        // Case sản phẩm có biến thể
+
+        // Sắp xếp variants theo giá (tăng dần) để lấy giá thấp nhất trước
         const sortedVariants = productJson.variants.sort(
           (a, b) => parseFloat(a.price) - parseFloat(b.price),
         );
         displayPrice = parseFloat(sortedVariants[0].price) || displayPrice;
       }
 
-      // Add ratings and remove reviews from response
+      // Xóa phần đánh giá vì đã tính toán điểm đánh giá, không cần thiết trong response nữa
       delete productJson.reviews;
 
       return {
@@ -929,7 +936,7 @@ const getRelatedProducts = async (req, res, next) => {
     const { id } = req.params;
     const { limit = 4 } = req.query;
 
-    // Find product
+    // Tìm sản phẩm hiện tại để lấy danh mục
     const product = await Product.findByPk(id, {
       include: [
         {
@@ -943,12 +950,12 @@ const getRelatedProducts = async (req, res, next) => {
       throw new AppError('Không tìm thấy sản phẩm', 404);
     }
 
-    // Get category IDs
+    // Lấy danh sách ID danh mục của sản phẩm hiện tại
     const categoryIds = product.categories.map((category) => category.id);
 
     let relatedProductsRaw = [];
 
-    // Nếu sản phẩm có danh mục, tìm sản phẩm liên quan theo danh mục
+    // Nếu sản phẩm có các danh mục, tìm các sản phẩm liên quan theo các danh mục đó
     if (categoryIds.length > 0) {
       relatedProductsRaw = await Product.findAll({
         include: [
@@ -963,20 +970,16 @@ const getRelatedProducts = async (req, res, next) => {
           },
         ],
         where: {
-          id: { [Op.ne]: id }, // Exclude current product
+          id: { [Op.ne]: id }, // Loại bỏ sản phẩm hiện tại
         },
         limit: parseInt(limit),
         order: [['createdAt', 'DESC']],
       });
     }
 
-    // Nếu không tìm thấy sản phẩm liên quan theo danh mục hoặc sản phẩm không có danh mục
-    // Trả về các sản phẩm mới nhất hoặc sản phẩm nổi bật
+    // Nếu sản phẩm hiện tại không có danh mục hoặc không tìm thấy sản phẩm liên quan theo danh mục,
+    // thì trả về các sản phẩm mới nhất hoặc sản phẩm nổi bật
     if (relatedProductsRaw.length === 0) {
-      console.log(
-        `No related products found for product ${id}. Returning recent products instead.`,
-      );
-
       relatedProductsRaw = await Product.findAll({
         include: [
           {
@@ -985,22 +988,22 @@ const getRelatedProducts = async (req, res, next) => {
           },
         ],
         where: {
-          id: { [Op.ne]: id }, // Exclude current product
+          id: { [Op.ne]: id }, // Loại bỏ sản phẩm hiện tại
           status: 'active', // Chỉ lấy sản phẩm đang hoạt động
         },
         limit: parseInt(limit),
         order: [
-          ['featured', 'DESC'], // Ưu tiên sản phẩm nổi bật
+          ['featured', 'DESC'], // Ưu tiên các sản phẩm nổi bật
           ['createdAt', 'DESC'], // Sau đó là sản phẩm mới nhất
         ],
       });
     }
 
-    // Process products to add ratings
+    // Thêm ratings vào các sản phẩm liên quan
     const relatedProducts = relatedProductsRaw.map((product) => {
       const productJson = product.toJSON();
 
-      // Calculate average rating
+      // Tính rating trung bình
       const ratings = {
         average: 0,
         count: 0,
@@ -1011,13 +1014,15 @@ const getRelatedProducts = async (req, res, next) => {
           (sum, review) => sum + review.rating,
           0,
         );
+
         ratings.average = parseFloat(
           (totalRating / productJson.reviews.length).toFixed(1),
         );
+
         ratings.count = productJson.reviews.length;
       }
 
-      // Add ratings and remove reviews from response
+      // Xóa phần đánh giá vì đã tính toán điểm đánh giá, không cần thiết trong response nữa
       delete productJson.reviews;
 
       return {
@@ -1103,11 +1108,11 @@ const getNewArrivals = async (req, res, next) => {
       order: [['createdAt', 'DESC']],
     });
 
-    // Process products to add ratings
+    // Thêm ratings vào các sản phẩm
     const products = productsRaw.map((product) => {
       const productJson = product.toJSON();
 
-      // Calculate average rating
+      // Tính rating trung bình
       const ratings = {
         average: 0,
         count: 0,
@@ -1118,13 +1123,15 @@ const getNewArrivals = async (req, res, next) => {
           (sum, review) => sum + review.rating,
           0,
         );
+
         ratings.average = parseFloat(
           (totalRating / productJson.reviews.length).toFixed(1),
         );
+
         ratings.count = productJson.reviews.length;
       }
 
-      // Add ratings and remove reviews from response
+      // Xóa phần đánh giá vì đã tính toán điểm đánh giá, không cần thiết trong response nữa
       delete productJson.reviews;
 
       return {
@@ -1149,7 +1156,7 @@ const getBestSellers = async (req, res, next) => {
   try {
     const { limit = 10, period = 'month' } = req.query;
 
-    // Calculate date range based on period
+    // Tính phạm vi ngày dựa trên period
     const now = new Date();
     let startDate;
 
@@ -1164,31 +1171,53 @@ const getBestSellers = async (req, res, next) => {
         startDate = new Date(now.setFullYear(now.getFullYear() - 1));
         break;
       default:
+        // Mặc định là 1 tháng
         startDate = new Date(now.setMonth(now.getMonth() - 1));
     }
 
-    // Get best selling products based on order items
+    // Lấy các sản phẩm được bán chạy nhất dựa trên số lượng đã bán trong khoảng thời gian đã cho
+
+    // Lấy tên bảng và tên các trường từ Model để tránh lỗi khi tên bảng hoặc trường bị thay đổi
+    const productTableName = getTableName(Product);
+    const Product_name = getField(Product, 'name');
+    const Product_slug = getField(Product, 'slug');
+    const Product_price = getField(Product, 'price');
+    const Product_compareAtPrice = getField(Product, 'compareAtPrice');
+    const Product_thumbnail = getField(Product, 'thumbnail');
+    const Product_inStock = getField(Product, 'inStock');
+    const Product_stockQuantity = getField(Product, 'stockQuantity');
+    const Product_featured = getField(Product, 'featured');
+
+    const orderItemTableName = getTableName(OrderItem);
+    const OrderItem_productId = getField(OrderItem, 'productId');
+    const OrderItem_orderId = getField(OrderItem, 'orderId');
+    const OrderItem_quantity = getField(OrderItem, 'quantity');
+
+    const orderTableName = getTableName(Order);
+    const Order_status = getField(Order, 'status');
+    const Order_createdAt = getField(Order, 'createdAt');
+
     const bestSellers = await sequelize.query(
       `
       SELECT 
         p.id, 
-        p.name, 
-        p.slug, 
-        p.price, 
-        p.compare_at_price, 
-        p.thumbnail, 
-        p.in_stock,
-        p.stock_quantity,
-        p.featured,
-        COUNT(oi.product_id) as sales_count,
-        SUM(oi.quantity) as units_sold
-      FROM products p
-      JOIN order_items oi ON p.id = oi.product_id
-      JOIN orders o ON oi.order_id = o.id
-      WHERE o.status != 'cancelled'
-      AND o.created_at >= :startDate
-      GROUP BY p.id
-      ORDER BY units_sold DESC
+        p.${Product_name}, 
+        p.${Product_slug}, 
+        p.${Product_price}, 
+        p.${Product_compareAtPrice}, 
+        p.${Product_thumbnail}, 
+        p.${Product_inStock}, 
+        p.${Product_stockQuantity}, 
+        p.${Product_featured}, 
+        COUNT(oi.${OrderItem_productId}) as sales_count, 
+        SUM(oi.${OrderItem_quantity}) as units_sold 
+      FROM ${productTableName} p 
+      JOIN ${orderItemTableName} oi ON p.id = oi.${OrderItem_productId} 
+      JOIN ${orderTableName} o ON oi.${OrderItem_orderId} = o.id 
+      WHERE o.${Order_status} != 'cancelled' 
+      AND o.${Order_createdAt} >= :startDate 
+      GROUP BY p.id 
+      ORDER BY units_sold DESC 
       LIMIT :limit
       `,
       {
@@ -1197,15 +1226,15 @@ const getBestSellers = async (req, res, next) => {
       },
     );
 
-    // If no best sellers found, return newest products
+    // Nếu không tìm thấy sản phẩm bán chạy, trả về sản phẩm mới về
     if (bestSellers.length === 0) {
       return await getNewArrivals(req, res, next);
     }
 
-    // Get product IDs
+    // Lấy danh sách ID sản phẩm bán chạy
     const productIds = bestSellers.map((product) => product.id);
 
-    // Get full product details
+    // Lấy chi tiết đầy đủ của sản phẩm
     const products = await Product.findAll({
       where: { id: { [Op.in]: productIds } },
       include: [
@@ -1216,9 +1245,10 @@ const getBestSellers = async (req, res, next) => {
       ],
       order: [
         [
+          // Sắp xếp theo đúng thứ tự của productIds (từ bán chạy nhất đến ít chạy hơn)
           sequelize.literal(
             `CASE ${productIds
-              .map((id, index) => `WHEN id = ${id} THEN ${index}`)
+              .map((id, index) => `WHEN "Product"."id" = '${id}' THEN ${index}`)
               .join(' ')} END`,
           ),
         ],
@@ -1241,7 +1271,7 @@ const getDeals = async (req, res, next) => {
   try {
     const { minDiscount = 5, limit = 12, sort = 'discount_desc' } = req.query;
 
-    // Get all products with a compareAtPrice
+    // Lấy tất cả sản phẩm có giá so sánh
     const allProducts = await Product.findAll({
       where: {
         compareAtPrice: { [Op.ne]: null },
@@ -1258,15 +1288,18 @@ const getDeals = async (req, res, next) => {
       ],
     });
 
-    // Calculate discount percentage and filter products
+    // Thêm phần trăm giảm giá vào từng sản phẩm và lọc theo minDiscount
+    // Phần trăm giảm giá phải lớn hơn hoặc bằng minDiscount
     const discountedProducts = allProducts
       .map((product) => {
         const price = parseFloat(product.price);
+
         const compareAtPrice = parseFloat(product.compareAtPrice);
+
         const discountPercentage =
           ((compareAtPrice - price) / compareAtPrice) * 100;
 
-        // Calculate average rating
+        // Tính rating trung bình
         const ratings = {
           average: 0,
           count: 0,
@@ -1277,12 +1310,15 @@ const getDeals = async (req, res, next) => {
             (sum, review) => sum + review.rating,
             0,
           );
+
           ratings.average = parseFloat(
             (totalRating / product.reviews.length).toFixed(1),
           );
+
           ratings.count = product.reviews.length;
         }
 
+        // Trả về sản phẩm cùng với phần trăm giảm giá và ratings
         return {
           ...product.toJSON(),
           discountPercentage,
@@ -1293,7 +1329,7 @@ const getDeals = async (req, res, next) => {
         (product) => product.discountPercentage >= parseFloat(minDiscount),
       );
 
-    // Sort products
+    // Sắp xếp sản phẩm theo yêu cầu sắp xếp
     let sortedProducts;
     switch (sort) {
       case 'price_asc':
@@ -1304,12 +1340,13 @@ const getDeals = async (req, res, next) => {
         break;
       case 'discount_desc':
       default:
+        // Mặc định sắp xếp theo phần trăm giảm giá giảm dần
         sortedProducts = discountedProducts.sort(
           (a, b) => b.discountPercentage - a.discountPercentage,
         );
     }
 
-    // Apply limit
+    // Giới hạn số lượng sản phẩm trả về
     const limitedProducts = sortedProducts.slice(0, parseInt(limit));
 
     res.status(200).json({
@@ -1328,13 +1365,14 @@ const getProductVariants = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Find product
+    // Tìm sản phẩm
     const product = await Product.findByPk(id);
+
     if (!product) {
       throw new AppError('Không tìm thấy sản phẩm', 404);
     }
 
-    // Get variants
+    // Lấy các biến thể của sản phẩm
     const variants = await ProductVariant.findAll({
       where: { productId: id },
     });
@@ -1357,26 +1395,29 @@ const getProductReviewsSummary = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Find product
+    // Tìm sản phẩm
     const product = await Product.findByPk(id);
+
     if (!product) {
       throw new AppError('Không tìm thấy sản phẩm', 404);
     }
 
-    // Get reviews
+    // Lấy tất cả đánh giá của sản phẩm
     const reviews = await Review.findAll({
       where: { productId: id },
       attributes: ['rating'],
     });
 
-    // Calculate summary
+    // Đếm số lượng đánh giá
     const count = reviews.length;
+
+    // Tính điểm đánh giá trung bình
     const average =
       count > 0
         ? reviews.reduce((sum, review) => sum + review.rating, 0) / count
         : 0;
 
-    // Calculate distribution
+    // Tính phân bố điểm đánh giá
     const distribution = {
       1: 0,
       2: 0,
@@ -1385,6 +1426,7 @@ const getProductReviewsSummary = async (req, res, next) => {
       5: 0,
     };
 
+    // Đếm số lượng đánh giá cho mỗi điểm (1 đến 5)
     reviews.forEach((review) => {
       distribution[review.rating]++;
     });
@@ -1409,10 +1451,10 @@ const getProductFilters = async (req, res, next) => {
   try {
     const { categoryId } = req.query;
 
-    console.log('Getting product filters with categoryId:', categoryId);
+    console.log('Đang lấy bộ lọc sản phẩm với categoryId:', categoryId);
 
-    // Build where condition
     const whereCondition = {};
+
     const includeCondition = [];
 
     if (categoryId) {
@@ -1434,25 +1476,30 @@ const getProductFilters = async (req, res, next) => {
         const category = await Category.findOne({
           where: { slug: categoryId },
         });
+
         if (category) {
           includeCondition.push({
             association: 'categories',
             where: { id: category.id },
             through: { attributes: [] },
-            required: false,
+            required: false, // Đặt required: false để tránh lỗi khi không tìm thấy danh mục
           });
         }
       }
     }
 
-    // Get price range
+    const Product_price = getField(Product, 'price');
+
+    // Lấy khoảng giá
     const priceRange = await Product.findAll({
       attributes: [
-        [sequelize.fn('MIN', sequelize.col('price')), 'min'],
-        [sequelize.fn('MAX', sequelize.col('price')), 'max'],
+        [sequelize.fn('MIN', sequelize.col(Product_price)), 'min'],
+        [sequelize.fn('MAX', sequelize.col(Product_price)), 'max'],
       ],
       where: whereCondition,
       include: includeCondition,
+      // Nếu có categoryId thì thêm group by để tránh lỗi
+      group: categoryId ? ['categories.id'] : undefined,
       raw: true,
     });
 
@@ -1463,12 +1510,18 @@ const getProductFilters = async (req, res, next) => {
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
           categoryId,
         );
+
       if (isValidUUID) {
+        // Case categoryId là UUID hợp lệ
+
         actualCategoryId = categoryId;
       } else {
+        // Case categoryId là slug
+
         const category = await Category.findOne({
           where: { slug: categoryId },
         });
+
         if (category) {
           actualCategoryId = category.id;
         }
@@ -1478,16 +1531,24 @@ const getProductFilters = async (req, res, next) => {
     // Xây dựng điều kiện lọc sản phẩm theo danh mục
     let productFilter = {};
     if (actualCategoryId) {
+      const productCategoryTableName = getTableName(ProductCategory);
+      const ProductCategory_productId = getField(ProductCategory, 'productId');
+      const ProductCategory_categoryId = getField(
+        ProductCategory,
+        'categoryId',
+      );
+
+      // Nếu có categoryId, lọc sản phẩm theo danh mục đó
       productFilter = {
         productId: {
           [Op.in]: sequelize.literal(
-            `(SELECT product_id FROM product_categories WHERE category_id = '${actualCategoryId}')`,
+            `(SELECT ${ProductCategory_productId} FROM ${productCategoryTableName} WHERE ${ProductCategory_categoryId} = '${actualCategoryId}')`,
           ),
         },
       };
     }
 
-    // Get brands
+    // Lấy các thương hiệu
     const brands = await ProductAttribute.findAll({
       attributes: ['values'],
       where: {
@@ -1497,7 +1558,7 @@ const getProductFilters = async (req, res, next) => {
       raw: true,
     });
 
-    // Get colors
+    // Lấy màu sắc
     const colors = await ProductAttribute.findAll({
       attributes: ['values'],
       where: {
@@ -1507,7 +1568,7 @@ const getProductFilters = async (req, res, next) => {
       raw: true,
     });
 
-    // Get sizes
+    // Lấy kích thước
     const sizes = await ProductAttribute.findAll({
       attributes: ['values'],
       where: {
@@ -1517,7 +1578,7 @@ const getProductFilters = async (req, res, next) => {
       raw: true,
     });
 
-    // Get other attributes
+    // Lấy các thuộc tính khác
     const otherAttributes = await ProductAttribute.findAll({
       attributes: ['name', 'values'],
       where: {
