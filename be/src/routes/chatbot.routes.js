@@ -71,8 +71,9 @@ const chatbotController = new ChatbotController();
  *                       type: string
  *                       description: Chat session ID
  */
-router.post('/message', (req, res) =>
-  chatbotController.handleMessage(req, res)
+router.post(
+  '/message',
+  (req, res) => chatbotController.handleMessage(req, res), // Xử lý tin nhắn chat bằng AI
 );
 
 /**
@@ -104,8 +105,9 @@ router.post('/message', (req, res) =>
  *       200:
  *         description: Product search results
  */
-router.post('/products/search', (req, res) =>
-  chatbotController.aiProductSearch(req, res)
+router.post(
+  '/products/search',
+  (req, res) => chatbotController.aiProductSearch(req, res), // Tìm kiếm sản phẩm bằng AI
 );
 
 /**
@@ -137,8 +139,9 @@ router.post('/products/search', (req, res) =>
  *       200:
  *         description: Product recommendations
  */
-router.get('/recommendations', (req, res) =>
-  chatbotController.getRecommendations(req, res)
+router.get(
+  '/recommendations',
+  (req, res) => chatbotController.getRecommendations(req, res), // Lấy đề xuất được cá nhân hóa
 );
 
 /**
@@ -171,8 +174,9 @@ router.get('/recommendations', (req, res) =>
  *       200:
  *         description: Analytics tracked successfully
  */
-router.post('/analytics', (req, res) =>
-  chatbotController.trackAnalytics(req, res)
+router.post(
+  '/analytics',
+  (req, res) => chatbotController.trackAnalytics(req, res), // Theo dõi analitycs từ chatbot
 );
 
 /**
@@ -205,11 +209,17 @@ router.post('/analytics', (req, res) =>
  *       200:
  *         description: Product added to cart
  */
-router.post('/cart/add', authenticate, (req, res) =>
-  chatbotController.addToCart(req, res)
+router.post(
+  '/cart/add',
+  authenticate,
+  (req, res) => chatbotController.addToCart(req, res), // Thêm sản phẩm vào giỏ hàng qua chatbot
 );
 
-// Test endpoint
+router.post(
+  '/simple-message',
+  (req, res) => chatbotController.handleSimpleMessage(req, res), // Trình xử lý tin nhắn đơn giản
+);
+
 router.get('/test', (req, res) => {
   res.json({
     status: 'success',
@@ -218,7 +228,6 @@ router.get('/test', (req, res) => {
   });
 });
 
-// Simple test message endpoint
 router.post('/test-message', async (req, res) => {
   try {
     const { message } = req.body;
@@ -239,10 +248,5 @@ router.post('/test-message', async (req, res) => {
     });
   }
 });
-
-// Simple message using controller
-router.post('/simple-message', (req, res) =>
-  chatbotController.handleSimpleMessage(req, res)
-);
 
 module.exports = router;

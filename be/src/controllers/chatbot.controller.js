@@ -8,81 +8,372 @@ const {
   CartItem,
   sequelize,
 } = require('../models');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { Op } = require('sequelize');
 const chatbotService = require('../services/chatbot.service');
 const geminiChatbotService = require('../services/geminiChatbot.service');
+const { getField } = require('../utils/helpers');
 
-// Initialize Gemini AI only if API key is available
+// Khởi tạo Gemini AI client
 let genAI = null;
+
 try {
   if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'demo-key') {
-    const { GoogleGenerativeAI } = require('@google/generative-ai');
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   }
 } catch (error) {
-  console.log('Google Generative AI not available, using fallback responses');
+  console.log('Google Generative AI không khả dụng, sử dụng phản hồi dự phòng');
 }
 
 class ChatbotController {
   /**
-   * Handle chat message with AI intelligence
+   * Xử lý tin nhắn chat bằng trí tuệ nhân tạo
    */
   async handleMessage(req, res) {
     try {
       const { message, userId, sessionId, context = {} } = req.body;
-      console.log('Received chatbot message:', { message, userId, sessionId });
+      console.log('Đã nhận tin nhắn của người dùng:', {
+        message,
+        userId,
+        sessionId,
+      });
 
+      // Kiểm tra tin nhắn rỗng
       if (!message?.trim()) {
         return res.status(400).json({
           status: 'error',
-          message: 'Message is required',
+          message: 'Tin nhắn không được để trống',
         });
       }
 
-      // Use Gemini AI service for intelligent response
+      // Sử dụng dịch vụ Gemini AI để xử lý tin nhắn
       const response = await geminiChatbotService.handleMessage(message, {
         userId,
         sessionId,
         ...context,
       });
 
+      // Gửi phản hồi về cho client
       res.json({
         status: 'success',
         data: response,
       });
     } catch (error) {
-      console.error('Chatbot error:', error);
-      console.error('Error stack:', error.stack);
+      console.error('Lỗi chatbot:', error);
+      console.error('Lỗi chi tiết:', error.stack);
+
       res.status(500).json({
         status: 'error',
-        message: 'Failed to process message',
+        message: 'Xử lý tin nhắn thất bại',
         data: {
           response:
             'Xin lỗi, tôi đang gặp một chút vấn đề. Vui lòng thử lại sau ít phút nhé! 😅',
-          suggestions: ['Xem sản phẩm hot', 'Tìm khuyến mãi', 'Liên hệ hỗ trợ'],
+          suggestions: [
+            'Xem tất cả sản phẩm',
+            'Chính sách đổi trả',
+            'Hỗ trợ mua hàng',
+            'Liên hệ tư vấn',
+          ],
         },
       });
     }
   }
 
   /**
-   * Handle product search queries
+   * Tìm kiếm sản phẩm bằng AI
+   */
+  async aiProductSearch(req, res) {
+    try {
+      const { query, userId, limit = 10 } = req.body;
+
+      // Kiểm tra truy vấn tìm kiếm rỗng
+      if (!query?.trim()) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Truy vấn tìm kiếm không được để trống',
+        });
+      }
+
+      // Trích xuất tham số tìm kiếm từ truy vấn
+      const searchParams = chatbotService.extractSearchParams(query);
+
+      // Tìm kiếm sản phẩm
+      const products = await this.searchProducts({ ...searchParams, limit });
+
+      res.json({
+        status: 'success',
+        data: {
+          query,
+          results: products,
+          total: products.length,
+        },
+      });
+    } catch (error) {
+      console.error('Lỗi khi tìm kiếm sản phẩm bằng AI:', error);
+
+      res.status(500).json({
+        status: 'error',
+        message: 'Tìm kiếm thất bại',
+      });
+    }
+  }
+
+  /**
+   * Lấy đề xuất được cá nhân hóa
+   */
+  async getRecommendations(req, res) {
+    try {
+      const { userId, limit = 5, type = 'personal' } = req.query;
+
+      // Lấy đề xuất
+      const recommendations =
+        await chatbotService.getPersonalizedRecommendations(userId, {
+          type,
+          limit: parseInt(limit),
+        });
+
+      res.json({
+        status: 'success',
+        data: {
+          recommendations,
+          type,
+        },
+      });
+    } catch (error) {
+      console.error('Lỗi khi lấy đề xuất:', error);
+
+      res.status(500).json({
+        status: 'error',
+        message: 'Lấy đề xuất thất bại',
+      });
+    }
+  }
+
+  /**
+   * Theo dõi analytics từ chatbot
+   */
+  async trackAnalytics(req, res) {
+    try {
+      const { event, userId, sessionId, productId, value, metadata } = req.body;
+
+      // Ghi nhận sự kiện phân tích
+      await chatbotService.trackAnalytics({
+        event,
+        userId,
+        sessionId,
+        productId,
+        value,
+        metadata,
+        timestamp: new Date(),
+      });
+
+      res.json({
+        status: 'success',
+        message: 'Analytics được theo dõi thành công',
+      });
+    } catch (error) {
+      console.error('Lỗi khi theo dõi analytics:', error);
+
+      res.status(500).json({
+        status: 'error',
+        message: 'Theo dõi analytics thất bại',
+      });
+    }
+  }
+
+  /**
+   * Thêm sản phẩm vào giỏ hàng qua chatbot
+   */
+  async addToCart(req, res) {
+    try {
+      const { productId, variantId, quantity = 1, sessionId } = req.body;
+      const userId = req.user.id;
+
+      // Lấy hoặc tạo giỏ hàng
+      let cart = await Cart.findOne({ where: { userId } });
+
+      // Nếu chưa có giỏ hàng, tạo mới
+      if (!cart) {
+        cart = await Cart.create({ userId });
+      }
+
+      // Thêm sản phẩm vào giỏ hàng
+      const cartItem = await CartItem.create({
+        cartId: cart.id,
+        productId,
+        variantId,
+        quantity,
+      });
+
+      // Theo dõi analytics
+      await chatbotService.trackAnalytics({
+        event: 'product_added_to_cart',
+        userId,
+        sessionId,
+        productId,
+        metadata: { quantity, source: 'chatbot' },
+        timestamp: new Date(),
+      });
+
+      res.json({
+        status: 'success',
+        message: 'Thêm sản phẩm vào giỏ hàng thành công',
+        data: { cartItem },
+      });
+    } catch (error) {
+      console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+
+      res.status(500).json({
+        status: 'error',
+        message: 'Thêm sản phẩm vào giỏ hàng thất bại',
+      });
+    }
+  }
+
+  /**
+   * Helper method tìm kiếm sản phẩm trong cơ sở dữ liệu
+   */
+  async searchProducts(searchParams) {
+    const where = {
+      status: 'active',
+      inStock: true,
+    };
+
+    // Thêm điều kiện tìm kiếm
+    if (searchParams.keyword) {
+      const keywordMapping = {
+        laptop: ['notebook', 'máy tính xách tay', 'macbook', 'ultrabook'],
+        'điện thoại': ['smartphone', 'phone', 'iphone', 'samsung', 'xiaomi'],
+        'phụ kiện': ['tai nghe', 'chuột', 'bàn phím', 'sạc dự phòng', 'loa'],
+        'máy tính bảng': ['tablet', 'ipad', 'galaxy tab'],
+        'máy ảnh': ['camera', 'dslr', 'mirrorless'],
+        'màn hình': ['monitor', 'screen', 'display'],
+        'ổ cứng': ['ssd', 'hdd', 'lưu trữ'],
+        ram: ['bộ nhớ', 'memory'],
+        'card đồ họa': ['gpu', 'vga', 'graphics card'],
+        'bộ vi xử lý': ['cpu', 'processor', 'chip'],
+        mainboard: ['bo mạch chủ', 'motherboard', 'board'],
+      };
+
+      const originalKeyword = searchParams.keyword.toLowerCase();
+
+      let searchTerms = [originalKeyword];
+
+      // Mở rộng từ khóa dựa trên ánh xạ
+      Object.keys(keywordMapping).forEach((viKeyword) => {
+        if (originalKeyword.includes(viKeyword)) {
+          searchTerms = [...searchTerms, ...keywordMapping[viKeyword]];
+        }
+      });
+
+      // Tạo điều kiện tìm kiếm cho tất cả các từ khóa
+      const searchConditions = [];
+
+      // Tạo điều kiện tìm kiếm cho tất cả các từ khóa
+      searchTerms.forEach((term) => {
+        searchConditions.push(
+          { name: { [Op.iLike]: `%${term}%` } },
+          { description: { [Op.iLike]: `%${term}%` } },
+        );
+      });
+
+      // Sử dụng toán tử OR để tìm kiếm với tất kỳ từ khóa nào khớp
+      where[Op.or] = searchConditions;
+    }
+
+    if (searchParams.minPrice) {
+      where.price = { [Op.gte]: searchParams.minPrice };
+    }
+    if (searchParams.maxPrice) {
+      where.price = { ...where.price, [Op.lte]: searchParams.maxPrice };
+    }
+
+    // Lấy sản phẩm theo các điều kiện đã xây dựng
+    const products = await Product.findAll({
+      where,
+      include: [
+        {
+          model: Category,
+          as: 'categories',
+          through: { attributes: [] },
+        },
+      ],
+      limit: searchParams.limit || 20,
+      order: [['createdAt', 'DESC']],
+    });
+
+    return products;
+  }
+
+  /**
+   * Trình xử lý tin nhắn đơn giản
+   */
+  async handleSimpleMessage(req, res) {
+    try {
+      const { message, userId, sessionId, context = {} } = req.body;
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Tin nhắn đơn giản đã nhận:', {
+          message,
+          userId,
+          sessionId,
+        });
+      }
+
+      // Kiểm tra tin nhắn rỗng
+      if (!message?.trim()) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Tin nhắn là bắt buộc',
+        });
+      }
+
+      // Phản hồi đơn giản
+      const response = {
+        response: `Chào bạn! Bạn vừa nói: "${message}". Tôi là trợ lý AI của DigitalWorld! 😊`,
+        suggestions: [
+          'Xem tất cả sản phẩm',
+          'Chính sách đổi trả',
+          'Hỗ trợ mua hàng',
+          'Liên hệ tư vấn',
+        ],
+      };
+
+      res.json({
+        status: 'success',
+        data: response,
+      });
+    } catch (error) {
+      console.error(
+        'Lỗi khi xử lý tin nhắn đơn giản thử nghiệm:',
+        error.message || error,
+      );
+      res.status(500).json({
+        status: 'error',
+        message: 'Xử lý tin nhắn thử nghiệm thất bại',
+      });
+    }
+  }
+
+  /**
+   * Xử lý truy vấn tìm kiếm sản phẩm
+   * Hàm này đang trong quá trình thử nghiệm
    */
   async handleProductSearch(message, intent, userProfile, context) {
     try {
-      // Extract search parameters from natural language
+      // Trích xuất tham số tìm kiếm từ ngôn ngữ tự nhiên
       const searchParams = chatbotService.extractSearchParams(message);
 
-      // Get products from database
+      // Lấy sản phẩm từ cơ sở dữ liệu
       const products = await this.searchProducts(searchParams);
 
-      // Generate AI response
+      // Tạo phản hồi AI
       const aiResponse = await this.generateAIResponse(
         `Tìm sản phẩm: ${message}`,
         { products, userProfile, searchParams },
       );
 
-      // Create product recommendations
+      // Tạo đề xuất sản phẩm
       const productCards = products.slice(0, 5).map((product) => ({
         id: product.id,
         name: product.name,
@@ -104,10 +395,10 @@ class ChatbotController {
         response: aiResponse,
         products: productCards,
         suggestions: [
-          'Xem thêm sản phẩm tương tự',
-          'So sánh giá',
-          'Xem khuyến mãi',
-          'Thêm vào giỏ hàng',
+          'Xem tất cả sản phẩm',
+          'Chính sách đổi trả',
+          'Hỗ trợ mua hàng',
+          'Liên hệ tư vấn',
         ],
         actions:
           products.length > 0
@@ -121,22 +412,26 @@ class ChatbotController {
             : [],
       };
     } catch (error) {
-      console.error('Product search error:', error);
+      console.error('Lỗi khi tìm kiếm sản phẩm:', error);
+
       throw error;
     }
   }
 
   /**
-   * Handle product recommendation requests
+   * Xử lý các yêu cầu về gợi ý sản phẩm
+   * Hàm này đang trong quá trình thử nghiệm
    */
   async handleProductRecommendation(message, intent, userProfile, context) {
     try {
+      // Lấy gợi ý cá nhân hóa
       const recommendations =
         await chatbotService.getPersonalizedRecommendations(
           userProfile?.id,
           intent.params,
         );
 
+      // Tạo phản hồi AI
       const aiResponse = await this.generateAIResponse(
         `Gợi ý sản phẩm: ${message}`,
         { recommendations, userProfile },
@@ -146,28 +441,30 @@ class ChatbotController {
         response: aiResponse,
         products: recommendations,
         suggestions: [
-          'Xem chi tiết sản phẩm',
-          'So sánh các sản phẩm',
-          'Tìm sản phẩm tương tự',
-          'Thêm vào giỏ hàng',
+          'Xem tất cả sản phẩm',
+          'Chính sách đổi trả',
+          'Hỗ trợ mua hàng',
+          'Liên hệ tư vấn',
         ],
       };
     } catch (error) {
-      console.error('Product recommendation error:', error);
+      console.error('Lỗi khi gợi ý sản phẩm:', error);
+
       throw error;
     }
   }
 
   /**
-   * Handle sales pitch - the money-making magic! 💰
+   * Xử lý các yêu cầu chào bán sản phẩm
+   * Hàm này đang trong quá trình thử nghiệm
    */
   async handleSalesPitch(message, intent, userProfile, context) {
     try {
-      // Get best deals and trending products
+      // Lấy các ưu đãi tốt nhất và sản phẩm thịnh hành
       const bestDeals = await this.getBestDeals();
       const trendingProducts = await this.getTrendingProducts();
 
-      // Personalize pitch based on user profile
+      // Cá nhân hóa bài thuyết phục dựa trên hồ sơ người dùng
       const personalizedPitch = await chatbotService.generateSalesPitch({
         userProfile,
         message,
@@ -180,10 +477,10 @@ class ChatbotController {
         response: personalizedPitch.text,
         products: personalizedPitch.products,
         suggestions: [
-          '💳 Mua ngay - Ưu đãi có hạn!',
-          '🛒 Thêm vào giỏ hàng',
-          '💝 Xem thêm khuyến mãi',
-          '📱 Liên hệ tư vấn',
+          'Xem tất cả sản phẩm',
+          'Chính sách đổi trả',
+          'Hỗ trợ mua hàng',
+          'Liên hệ tư vấn',
         ],
         actions: [
           {
@@ -199,13 +496,14 @@ class ChatbotController {
         ],
       };
     } catch (error) {
-      console.error('Sales pitch error:', error);
+      console.error('Lỗi khi chào bán sản phẩm:', error);
       throw error;
     }
   }
 
   /**
-   * Handle order inquiry requests
+   * Xử lý các yêu cầu về đơn hàng
+   * Hàm này đang trong quá trình thử nghiệm
    */
   async handleOrderInquiry(message, intent, userProfile, context) {
     try {
@@ -217,20 +515,22 @@ class ChatbotController {
       return {
         response: aiResponse,
         suggestions: [
-          'Kiểm tra trạng thái đơn hàng',
-          'Thông tin giao hàng',
-          'Hủy đơn hàng',
-          'Liên hệ hỗ trợ',
+          'Xem tất cả sản phẩm',
+          'Chính sách đổi trả',
+          'Hỗ trợ mua hàng',
+          'Liên hệ tư vấn',
         ],
       };
     } catch (error) {
-      console.error('Order inquiry error:', error);
+      console.error('Lỗi khi hỗ trợ đơn hàng:', error);
+
       throw error;
     }
   }
 
   /**
-   * Handle support requests
+   * Xử lý các yêu cầu hỗ trợ khách hàng
+   * Hàm này đang trong quá trình thử nghiệm
    */
   async handleSupport(message, intent, userProfile, context) {
     try {
@@ -242,30 +542,36 @@ class ChatbotController {
       return {
         response: aiResponse,
         suggestions: [
+          'Xem tất cả sản phẩm',
           'Chính sách đổi trả',
-          'Hướng dẫn mua hàng',
-          'Thông tin bảo hành',
-          'Liên hệ hotline',
+          'Hỗ trợ mua hàng',
+          'Liên hệ tư vấn',
         ],
       };
     } catch (error) {
-      console.error('Support error:', error);
+      console.error('Lỗi khi hỗ trợ khách hàng:', error);
+
       throw error;
     }
   }
 
   /**
-   * Handle general conversation
+   * Xử lý các cuộc trò chuyện chung chung
+   * Hàm này đang trong quá trình thử nghiệm
    */
   async handleGeneral(message, intent, userProfile, context) {
     try {
-      // Always try to steer conversation toward sales
+      // Luôn cố gắng hướng cuộc trò chuyện theo hướng bán hàng
+
+      // Tìm kiếm cơ hội bán hàng trong tin nhắn
       const salesOpportunity = await chatbotService.findSalesOpportunity(
         message,
         userProfile,
       );
 
       let response;
+
+      // Nếu có cơ hội bán hàng, thì chào bán sản phẩm
       if (salesOpportunity.found) {
         response = await this.handleSalesPitch(
           message,
@@ -274,248 +580,37 @@ class ChatbotController {
           context,
         );
       } else {
+        // Ngược lại, tạo phản hồi chung chung
         const aiResponse = await this.generateAIResponse(message, {
           userProfile,
         });
+
         response = {
           response: aiResponse,
           suggestions: [
-            'Tìm sản phẩm hot 🔥',
-            'Xem khuyến mãi 🎉',
-            'Sản phẩm bán chạy ⭐',
-            'Hỗ trợ mua hàng 💬',
+            'Xem tất cả sản phẩm',
+            'Chính sách đổi trả',
+            'Hỗ trợ mua hàng',
+            'Liên hệ tư vấn',
           ],
         };
       }
 
       return response;
     } catch (error) {
-      console.error('General conversation error:', error);
+      console.error('Lỗi khi xử lý cuộc trò chuyện chung chung:', error);
       throw error;
     }
   }
 
   /**
-   * AI-powered product search
+   * Lấy các sản phẩm có ưu đãi tốt nhất
+   * Hàm này đang trong quá trình thử nghiệm
    */
-  async aiProductSearch(req, res) {
-    try {
-      const { query, userId, limit = 10 } = req.body;
-
-      if (!query?.trim()) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Search query is required',
-        });
-      }
-
-      const searchParams = chatbotService.extractSearchParams(query);
-      const products = await this.searchProducts({ ...searchParams, limit });
-
-      res.json({
-        status: 'success',
-        data: {
-          query,
-          results: products,
-          total: products.length,
-        },
-      });
-    } catch (error) {
-      console.error('AI product search error:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Search failed',
-      });
-    }
-  }
-
-  /**
-   * Get personalized recommendations
-   */
-  async getRecommendations(req, res) {
-    try {
-      const { userId, limit = 5, type = 'personal' } = req.query;
-
-      const recommendations =
-        await chatbotService.getPersonalizedRecommendations(userId, {
-          type,
-          limit: parseInt(limit),
-        });
-
-      res.json({
-        status: 'success',
-        data: {
-          recommendations,
-          type,
-        },
-      });
-    } catch (error) {
-      console.error('Recommendations error:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Failed to get recommendations',
-      });
-    }
-  }
-
-  /**
-   * Track chatbot analytics
-   */
-  async trackAnalytics(req, res) {
-    try {
-      const { event, userId, sessionId, productId, value, metadata } = req.body;
-
-      await chatbotService.trackAnalytics({
-        event,
-        userId,
-        sessionId,
-        productId,
-        value,
-        metadata,
-        timestamp: new Date(),
-      });
-
-      res.json({
-        status: 'success',
-        message: 'Analytics tracked successfully',
-      });
-    } catch (error) {
-      console.error('Analytics tracking error:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Failed to track analytics',
-      });
-    }
-  }
-
-  /**
-   * Add product to cart via chatbot
-   */
-  async addToCart(req, res) {
-    try {
-      const { productId, variantId, quantity = 1, sessionId } = req.body;
-      const userId = req.user.id;
-
-      // Get or create cart
-      let cart = await Cart.findOne({ where: { userId } });
-      if (!cart) {
-        cart = await Cart.create({ userId });
-      }
-
-      // Add item to cart
-      const cartItem = await CartItem.create({
-        cartId: cart.id,
-        productId,
-        variantId,
-        quantity,
-      });
-
-      // Track analytics
-      await chatbotService.trackAnalytics({
-        event: 'product_added_to_cart',
-        userId,
-        sessionId,
-        productId,
-        metadata: { quantity, source: 'chatbot' },
-        timestamp: new Date(),
-      });
-
-      res.json({
-        status: 'success',
-        message: 'Product added to cart successfully',
-        data: { cartItem },
-      });
-    } catch (error) {
-      console.error('Add to cart error:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Failed to add product to cart',
-      });
-    }
-  }
-
-  // Helper methods
-  async searchProducts(searchParams) {
-    const where = {
-      status: 'active',
-      inStock: true,
-    };
-
-    // Add search conditions
-    if (searchParams.keyword) {
-      // Vietnamese to English keyword mapping
-      const keywordMapping = {
-        giày: ['shoes', 'shoe', 'sneaker', 'nike', 'adidas'],
-        'giày thể thao': [
-          'shoes',
-          'sneaker',
-          'running shoes',
-          'nike',
-          'adidas',
-        ],
-        'thể thao': ['sport', 'sports', 'running', 'nike', 'adidas'],
-        áo: ['shirt', 'tshirt', 't-shirt'],
-        'áo thun': ['tshirt', 't-shirt', 'shirt'],
-        quần: ['pants', 'jeans', 'trousers'],
-        túi: ['bag', 'backpack'],
-        balo: ['backpack', 'bag'],
-        'phụ kiện': ['accessories', 'accessory'],
-        'đồng hồ': ['watch', 'watches'],
-        kính: ['glasses', 'sunglasses'],
-        mũ: ['hat', 'cap'],
-      };
-
-      const originalKeyword = searchParams.keyword.toLowerCase();
-      let searchTerms = [originalKeyword];
-
-      // Add mapped English terms if Vietnamese keyword is found
-      Object.keys(keywordMapping).forEach((viKeyword) => {
-        if (originalKeyword.includes(viKeyword)) {
-          searchTerms = [...searchTerms, ...keywordMapping[viKeyword]];
-        }
-      });
-
-      // Create search conditions for all terms
-      const searchConditions = [];
-      searchTerms.forEach((term) => {
-        searchConditions.push(
-          { name: { [Op.iLike]: `%${term}%` } },
-          { description: { [Op.iLike]: `%${term}%` } },
-        );
-      });
-
-      where[Op.or] = searchConditions;
-    }
-
-    if (searchParams.minPrice) {
-      where.price = { [Op.gte]: searchParams.minPrice };
-    }
-
-    if (searchParams.maxPrice) {
-      where.price = { ...where.price, [Op.lte]: searchParams.maxPrice };
-    }
-
-    if (searchParams.category) {
-      // Add category filter logic
-    }
-
-    const products = await Product.findAll({
-      where,
-      include: [
-        {
-          model: Category,
-          as: 'categories',
-          through: { attributes: [] },
-        },
-      ],
-      limit: searchParams.limit || 20,
-      order: [['createdAt', 'DESC']],
-    });
-
-    return products;
-  }
-
   async getBestDeals() {
+    const Product_compareAtPrice = getField(Product, 'compareAtPrice');
+    const Product_price = getField(Product, 'price');
+
     return await Product.findAll({
       where: {
         status: 'active',
@@ -524,9 +619,9 @@ class ChatbotController {
       },
       order: [
         [
-          // Order by discount percentage
+          // Sắp xếp theo tỷ lệ chiết khấu
           sequelize.literal(
-            '((compare_at_price - price) / compare_at_price) DESC',
+            `((${Product_compareAtPrice} - ${Product_price}) / ${Product_compareAtPrice}) DESC`,
           ),
         ],
       ],
@@ -534,8 +629,11 @@ class ChatbotController {
     });
   }
 
+  /**
+   * Lấy các sản phẩm thịnh hành
+   * Hàm này đang trong quá trình thử nghiệm
+   */
   async getTrendingProducts() {
-    // This could be based on order frequency, views, etc.
     return await Product.findAll({
       where: {
         status: 'active',
@@ -547,89 +645,62 @@ class ChatbotController {
     });
   }
 
+  /**
+   * Tạo phản hồi AI từ Gemini AI
+   * Hàm này đang trong quá trình thử nghiệm
+   */
   async generateAIResponse(prompt, context = {}) {
     try {
       if (!genAI) {
-        // Fallback to template response if no AI available
+        // Dự phòng phản hồi mẫu nếu không có sẵn AI
         return this.getTemplateResponse(prompt, context);
       }
 
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      const model = genAI.getGenerativeModel({
+        model: 'gemini-2.0-flash-lite',
+      });
 
       const enhancedPrompt = `
-        Bạn là trợ lý bán hàng thông minh của DigitalWorld - một cửa hàng thiết bị điện tử trực tuyến.
-        Mục tiêu chính của bạn là giúp khách hàng tìm và mua sản phẩm phù hợp.
+Bạn là trợ lý bán hàng thông minh của DigitalWorld - một cửa hàng thiết bị điện tử trực tuyến.
+Mục tiêu chính của bạn là giúp khách hàng tìm và mua sản phẩm phù hợp.
         
-        Ngữ cảnh: ${JSON.stringify(context)}
-        Câu hỏi khách hàng: ${prompt}
+Ngữ cảnh: ${JSON.stringify(context)}
+Câu hỏi khách hàng: ${prompt}
         
-        Hãy trả lời một cách:
-        - Thân thiện và chuyên nghiệp
-        - Tập trung vào việc bán hàng
-        - Đề xuất sản phẩm cụ thể khi có thể
-        - Tạo cảm giác cấp bách để khuyến khích mua hàng
-        - Sử dụng emoji phù hợp để tạo sự thân thiện
+Hãy trả lời một cách:
+- Thân thiện và chuyên nghiệp
+- Tập trung vào việc bán hàng
+- Đề xuất sản phẩm cụ thể khi có thể
+- Tạo cảm giác cấp bách để khuyến khích mua hàng
+- Sử dụng emoji phù hợp để tạo sự thân thiện
         
-        Độ dài: Khoảng 2-3 câu, ngắn gọn nhưng hiệu quả.
-      `;
+Độ dài: Khoảng 2-3 câu, ngắn gọn nhưng hiệu quả.
+`;
 
+      // Gọi mô hình để tạo phản hồi
       const result = await model.generateContent(enhancedPrompt);
       const response = result.response;
       return response.text();
     } catch (error) {
-      console.error('AI response generation error:', error.message || error);
+      console.error('Lỗi khi tạo phản hồi AI:', error.message || error);
+
       return this.getTemplateResponse(prompt, context);
     }
   }
 
+  /**
+   * Phản hồi mẫu dự phòng nếu AI không khả dụng
+   * Hàm này đang trong quá trình thử nghiệm
+   */
   getTemplateResponse(prompt, context) {
     const templates = [
-      'Tôi hiểu bạn đang tìm kiếm sản phẩm phù hợp! 😊 Để giúp bạn tốt nhất, hãy cho tôi biết thêm chi tiết về sở thích của bạn nhé.',
-      'Chào bạn! 👋 DigitalWorld có rất nhiều sản phẩm tuyệt vời. Bạn quan tâm đến loại sản phẩm nào nhất?',
-      'Cảm ơn bạn đã quan tâm! 🌟 Tôi sẽ giúp bạn tìm những sản phẩm tốt nhất với giá ưu đãi.',
+      'Tôi hiểu bạn đang tìm kiếm sản phẩm phù hợp! Để giúp bạn tốt nhất, hãy cho tôi biết thêm chi tiết về sở thích của bạn nhé.',
+      'Chào bạn! DigitalWorld có rất nhiều sản phẩm tuyệt vời. Bạn quan tâm đến loại sản phẩm nào nhất?',
+      'Cảm ơn bạn đã quan tâm! Tôi sẽ giúp bạn tìm những sản phẩm tốt nhất với giá ưu đãi.',
     ];
+
+    // Random một phản hồi mẫu
     return templates[Math.floor(Math.random() * templates.length)];
-  }
-
-  /**
-   * Simple message handler for testing
-   */
-  async handleSimpleMessage(req, res) {
-    try {
-      const { message, userId, sessionId, context = {} } = req.body;
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('Received simple message:', { message, userId, sessionId });
-      }
-
-      if (!message?.trim()) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Message is required',
-        });
-      }
-
-      // Simple response
-      const response = {
-        response: `Chào bạn! Bạn vừa nói: "${message}". Tôi là trợ lý AI của DigitalWorld! 😊`,
-        suggestions: [
-          'Tìm sản phẩm hot 🔥',
-          'Xem khuyến mãi 🎉',
-          'Sản phẩm bán chạy ⭐',
-          'Hỗ trợ mua hàng 💬',
-        ],
-      };
-
-      res.json({
-        status: 'success',
-        data: response,
-      });
-    } catch (error) {
-      console.error('Simple message error:', error.message || error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Failed to process simple message',
-      });
-    }
   }
 }
 

@@ -3,193 +3,104 @@ const { Op } = require('sequelize');
 
 class ChatbotService {
   /**
-   * Analyze user intent from message
-   */
-  async analyzeIntent(message) {
-    const lowerMessage = message.toLowerCase();
-
-    // Product search intents
-    if (
-      this.matchesPatterns(lowerMessage, [
-        'tìm',
-        'kiếm',
-        'search',
-        'mua',
-        'cần',
-        'muốn',
-        'có',
-        'bán',
-        'shop',
-        'store',
-        'sản phẩm',
-      ])
-    ) {
-      return {
-        type: 'product_search',
-        confidence: 0.8,
-        params: this.extractSearchParams(message),
-      };
-    }
-
-    // Product recommendation intents
-    if (
-      this.matchesPatterns(lowerMessage, [
-        'gợi ý',
-        'đề xuất',
-        'recommend',
-        'tư vấn',
-        'nên mua',
-        'phù hợp',
-        'hot',
-        'trend',
-        'bán chạy',
-        'mới',
-      ])
-    ) {
-      return {
-        type: 'product_recommendation',
-        confidence: 0.9,
-        params: { type: 'general' },
-      };
-    }
-
-    // Sales opportunity intents
-    if (
-      this.matchesPatterns(lowerMessage, [
-        'giá',
-        'bao nhiêu',
-        'cost',
-        'price',
-        'tiền',
-        'rẻ',
-        'đắt',
-        'sale',
-        'giảm giá',
-        'khuyến mãi',
-      ])
-    ) {
-      return {
-        type: 'sales_pitch',
-        confidence: 0.9,
-        params: { focus: 'pricing' },
-      };
-    }
-
-    // Order inquiry intents
-    if (
-      this.matchesPatterns(lowerMessage, [
-        'đơn hàng',
-        'order',
-        'mua hàng',
-        'thanh toán',
-        'ship',
-        'giao hàng',
-        'delivery',
-      ])
-    ) {
-      return {
-        type: 'order_inquiry',
-        confidence: 0.7,
-        params: {},
-      };
-    }
-
-    // Support intents
-    if (
-      this.matchesPatterns(lowerMessage, [
-        'hỗ trợ',
-        'help',
-        'support',
-        'lỗi',
-        'problem',
-        'đổi trả',
-        'return',
-        'refund',
-        'bảo hành',
-      ])
-    ) {
-      return {
-        type: 'support',
-        confidence: 0.8,
-        params: {},
-      };
-    }
-
-    return {
-      type: 'general',
-      confidence: 0.5,
-      params: {},
-    };
-  }
-
-  /**
-   * Extract search parameters from natural language
+   * Trích xuất các từ khóa tìm kiếm từ ngôn ngữ tự nhiên
    */
   extractSearchParams(message) {
     const lowerMessage = message.toLowerCase();
     const params = {};
 
-    // Extract product categories
+    // Tạo keyword mapping cho từng danh mục sản phẩm
     const categoryKeywords = {
-      áo: ['áo', 'shirt', 'top', 'blouse'],
-      quần: ['quần', 'pants', 'jeans', 'trousers'],
-      giày: ['giày', 'shoes', 'sneaker', 'boots'],
-      túi: ['túi', 'bag', 'backpack', 'handbag'],
-      'phụ kiện': ['phụ kiện', 'accessories', 'jewelry', 'watch'],
+      laptop: ['notebook', 'máy tính xách tay', 'macbook', 'ultrabook'],
+      'điện thoại': ['smartphone', 'phone', 'iphone', 'samsung', 'xiaomi'],
+      'máy tính bảng': ['tablet', 'ipad', 'galaxy tab'],
+      'đồng hồ thông minh': ['smartwatch', 'apple watch', 'samsung watch'],
+      'âm thanh': ['tai nghe', 'loa', 'headphone', 'earbuds'],
+      'máy ảnh': ['camera', 'dslr', 'mirrorless'],
+      'linh kiện máy tính': ['ram', 'ssd', 'hdd', 'cpu', 'gpu', 'mainboard'],
+      'màn hình': ['monitor', 'screen', 'display'],
+      'phụ kiện': ['chuột', 'bàn phím', 'sạc dự phòng', 'webcam'],
+      'thiết bị lưu trữ': ['ổ cứng', 'usb', 'external drive'],
+      'thiết bị mạng': ['router', 'modem', 'wifi'],
+      'điện tử gia dụng': ['smart home', 'iot', 'camera an ninh'],
+      'điện tử': ['tv', 'tivi', 'smart tv'],
     };
 
+    // Trích xuất danh mục sản phẩm
     for (const [category, keywords] of Object.entries(categoryKeywords)) {
-      if (keywords.some((keyword) => lowerMessage.includes(keyword))) {
+      if (this.matchesPatterns(lowerMessage, keywords)) {
         params.category = category;
+
         break;
       }
     }
 
-    // Extract price range
+    // Trích xuất khoảng giá sản phẩm
     const priceMatch = lowerMessage.match(/(\d+)(?:k|000|triệu)?/g);
     if (priceMatch) {
       const prices = priceMatch.map((p) => {
         if (p.includes('k')) return parseInt(p) * 1000;
         if (p.includes('triệu')) return parseInt(p) * 1000000;
+
         return parseInt(p);
       });
 
-      if (lowerMessage.includes('dưới') || lowerMessage.includes('under')) {
+      if (this.matchesPatterns(lowerMessage, ['dưới', 'under'])) {
         params.maxPrice = Math.max(...prices);
-      } else if (
-        lowerMessage.includes('trên') ||
-        lowerMessage.includes('over')
-      ) {
+      } else if (this.matchesPatterns(lowerMessage, ['trên', 'over'])) {
         params.minPrice = Math.min(...prices);
       }
     }
 
-    // Extract color
+    // Trích xuất màu sắc
     const colors = ['đỏ', 'xanh', 'đen', 'trắng', 'vàng', 'hồng', 'nâu', 'xám'];
     for (const color of colors) {
       if (lowerMessage.includes(color)) {
         params.color = color;
+
         break;
       }
     }
 
-    // Extract brand
-    const brands = ['nike', 'adidas', 'zara', 'h&m', 'uniqlo'];
+    // Trích xuất thương hiệu
+    const brands = [
+      'apple',
+      'samsung',
+      'xiaomi',
+      'dell',
+      'hp',
+      'lenovo',
+      'asus',
+      'acer',
+      'sony',
+      'lg',
+      'canon',
+      'nikon',
+      'logitech',
+      'razer',
+      'msi',
+      'huawei',
+      'oneplus',
+      'realme',
+      'oppo',
+      'vivo',
+    ];
     for (const brand of brands) {
       if (lowerMessage.includes(brand)) {
         params.brand = brand;
+
         break;
       }
     }
 
-    // Extract general keyword
+    // Trích xuất từ khóa chung
     params.keyword = message;
 
     return params;
   }
 
   /**
-   * Get user profile for personalization
+   * Lấy thông tin người dùng để cá nhân hóa
    */
   async getUserProfile(userId) {
     try {
@@ -205,6 +116,13 @@ class ChatbotService {
                 include: [
                   {
                     model: Product,
+                    include: [
+                      {
+                        model: Category,
+                        as: 'categories',
+                        through: { attributes: [] },
+                      },
+                    ],
                   },
                 ],
               },
@@ -215,36 +133,38 @@ class ChatbotService {
         ],
       });
 
+      // Nếu không tìm thấy người dùng, trả về null
       if (!user) return null;
 
-      // Calculate user preferences
-      const purchaseHistory = [];
-      const categoryPreferences = {};
-      const priceRange = { min: Infinity, max: 0 };
+      // Tính toán sở thích người dùng
+      const purchaseHistory = []; // Danh sách sản phẩm đã mua
+      const categoryPreferences = {}; // Sở thích danh mục sản phẩm mà người dùng thường mua
+      const priceRange = { min: Infinity, max: 0 }; // Khoảng giá mua sắm
 
       user.orders?.forEach((order) => {
         order.items?.forEach((item) => {
-          if (item.product) {
-            purchaseHistory.push(item.product);
+          const product = item.product || item.Product;
 
-            // Track category preferences
-            item.product.categories?.forEach((cat) => {
+          if (product) {
+            // Theo dõi lịch sử mua hàng
+            purchaseHistory.push(product);
+
+            // Theo dõi sở thích danh mục sản phẩm mà người dùng thường mua
+            product.categories?.forEach((cat) => {
               categoryPreferences[cat.name] =
                 (categoryPreferences[cat.name] || 0) + 1;
             });
 
-            // Track price range
-            if (item.product.price < priceRange.min)
-              priceRange.min = item.product.price;
-            if (item.product.price > priceRange.max)
-              priceRange.max = item.product.price;
+            // Theo dõi khoảng giá mua sắm
+            if (product.price < priceRange.min) priceRange.min = product.price;
+            if (product.price > priceRange.max) priceRange.max = product.price;
           }
         });
       });
 
       return {
         id: user.id,
-        name: user.name,
+        name: `${user.firstName} ${user.lastName}`,
         email: user.email,
         purchaseHistory,
         categoryPreferences,
@@ -253,13 +173,14 @@ class ChatbotService {
         isVip: (user.orders?.length || 0) >= 5,
       };
     } catch (error) {
-      console.error('Error getting user profile:', error);
+      console.error('Lỗi khi lấy thông tin người dùng:', error);
+
       return null;
     }
   }
 
   /**
-   * Get personalized product recommendations
+   * Lấy đề xuất sản phẩm cá nhân hóa
    */
   async getPersonalizedRecommendations(userId, params = {}) {
     try {
@@ -267,15 +188,16 @@ class ChatbotService {
       let products = [];
 
       if (type === 'personal' && userId) {
-        // Get user profile for personalization
+        // Lấy thông tin người dùng để cá nhân hóa
         const userProfile = await this.getUserProfile(userId);
 
         if (userProfile?.categoryPreferences) {
-          // Get products from user's preferred categories
+          // Lấy các danh mục ưa thích của người dùng
           const preferredCategories = Object.keys(
-            userProfile.categoryPreferences
+            userProfile.categoryPreferences,
           );
 
+          // Lấy các sản phẩm trong các danh mục ưa thích
           products = await Product.findAll({
             where: {
               status: 'active',
@@ -291,21 +213,23 @@ class ChatbotService {
                 through: { attributes: [] },
               },
             ],
-            limit: limit * 2, // Get more to filter later
+            limit: limit * 2, // Lấy gấp đôi số lượng để lọc sau
             order: [['createdAt', 'DESC']],
           });
 
-          // Filter out products user already bought
+          // Lọc bỏ các sản phẩm người dùng đã mua
           const purchasedProductIds = userProfile.purchaseHistory.map(
-            (p) => p.id
+            (p) => p.id,
           );
+
+          // Lọc bỏ các sản phẩm đã mua, chỉ giữ lại những sản phẩm chưa mua
           products = products.filter(
-            (p) => !purchasedProductIds.includes(p.id)
+            (p) => !purchasedProductIds.includes(p.id),
           );
         }
       }
 
-      // Fallback to trending/featured products
+      // Nếu không đủ sản phẩm cá nhân hóa, dự phòng bằng các sản phẩm nổi bật
       if (products.length < limit) {
         const fallbackProducts = await Product.findAll({
           where: {
@@ -313,20 +237,21 @@ class ChatbotService {
             inStock: true,
             [Op.or]: [
               { featured: true },
-              { compareAtPrice: { [Op.gt]: 0 } }, // Products on sale
+              { compareAtPrice: { [Op.gt]: 0 } }, // Sản phẩm có giảm giá
             ],
           },
-          limit: limit - products.length,
+          limit: limit - products.length, // Chỉ lấy số lượng cần thiết để đủ limit
           order: [
             ['featured', 'DESC'],
             ['createdAt', 'DESC'],
           ],
         });
 
+        // Kết hợp sản phẩm cá nhân hóa và dự phòng
         products = [...products, ...fallbackProducts];
       }
 
-      // Format products for frontend
+      // Format các sản phẩm để trả về frontend
       return products.slice(0, limit).map((product) => ({
         id: product.id,
         name: product.name,
@@ -334,23 +259,154 @@ class ChatbotService {
         compareAtPrice: product.compareAtPrice,
         thumbnail: product.thumbnail,
         inStock: product.inStock,
-        rating: 4.5, // TODO: Calculate from reviews
+        rating: 4.5,
         discount: product.compareAtPrice
           ? Math.round(
               ((product.compareAtPrice - product.price) /
                 product.compareAtPrice) *
-                100
+                100,
             )
           : 0,
       }));
     } catch (error) {
-      console.error('Error getting recommendations:', error);
+      console.error('Lỗi khi lấy đề xuất sản phẩm cá nhân hóa:', error);
+
       return [];
     }
   }
 
   /**
-   * Generate sales pitch - THE MONEY MAKER! 💰
+   * Theo dõi các sự kiện analytics
+   */
+  async trackAnalytics(data) {
+    try {
+      // Trong triển khai thực tế, những dữ liệu này sẽ được lưu vào bảng analytics
+      console.log('Dữ liệu analytics:', data);
+    } catch (error) {
+      console.error('Lỗi khi theo dõi analytics:', error);
+    }
+  }
+
+  /**
+   * Phân tích ý định của người dùng từ tin nhắn
+   * Hàm này đang trong quá trình thử nghiệm
+   */
+  async analyzeIntent(message) {
+    const lowerMessage = message.toLowerCase();
+
+    // Phân tích ý định tìm kiếm sản phẩm
+    const searchProductKeywords = [
+      'tìm',
+      'kiếm',
+      'search',
+      'mua',
+      'cần',
+      'muốn',
+      'có',
+      'bán',
+      'shop',
+      'store',
+      'sản phẩm',
+    ];
+    if (this.matchesPatterns(lowerMessage, searchProductKeywords)) {
+      return {
+        type: 'product_search',
+        confidence: 0.8,
+        params: this.extractSearchParams(message),
+      };
+    }
+
+    // Phân tích ý định đề xuất sản phẩm
+    const recommendationProductKeywords = [
+      'gợi ý',
+      'đề xuất',
+      'recommend',
+      'tư vấn',
+      'nên mua',
+      'phù hợp',
+      'hot',
+      'trend',
+      'bán chạy',
+      'mới',
+    ];
+    if (this.matchesPatterns(lowerMessage, recommendationProductKeywords)) {
+      return {
+        type: 'product_recommendation',
+        confidence: 0.9,
+        params: { type: 'general' },
+      };
+    }
+
+    // Phân tích ý định về sales pitch (bài thuyết phục bán hàng)
+    const salesPitchKeywords = [
+      'giá',
+      'bao nhiêu',
+      'cost',
+      'price',
+      'tiền',
+      'rẻ',
+      'đắt',
+      'sale',
+      'giảm giá',
+      'khuyến mãi',
+    ];
+    if (this.matchesPatterns(lowerMessage, salesPitchKeywords)) {
+      return {
+        type: 'sales_pitch',
+        confidence: 0.9,
+        params: { focus: 'pricing' },
+      };
+    }
+
+    // Phân tích ý định về đơn hàng
+    const orderInquiryKeywords = [
+      'đơn hàng',
+      'order',
+      'mua hàng',
+      'thanh toán',
+      'ship',
+      'giao hàng',
+      'delivery',
+    ];
+    if (this.matchesPatterns(lowerMessage, orderInquiryKeywords)) {
+      return {
+        type: 'order_inquiry',
+        confidence: 0.7,
+        params: {},
+      };
+    }
+
+    // Phân tích ý định về hỗ trợ khách hàng
+    const supportKeywords = [
+      'hỗ trợ',
+      'help',
+      'support',
+      'lỗi',
+      'problem',
+      'đổi trả',
+      'return',
+      'refund',
+      'bảo hành',
+    ];
+    if (this.matchesPatterns(lowerMessage, supportKeywords)) {
+      return {
+        type: 'support',
+        confidence: 0.8,
+        params: {},
+      };
+    }
+
+    // Mặc định trả về ý định chung
+    return {
+      type: 'general',
+      confidence: 0.5,
+      params: {},
+    };
+  }
+
+  /**
+   * Tạo bài thuyết phục bán hàng dựa trên hồ sơ người dùng và ngữ cảnh cuộc trò chuyện
+   * Hàm này đang trong quá trình thử nghiệm
    */
   async generateSalesPitch({
     userProfile,
@@ -363,6 +419,7 @@ class ChatbotService {
       const templates = this.getSalesPitchTemplates();
       const pitchType = this.selectPitchType(userProfile, message, context);
 
+      // Chọn loại bài thuyết phục dựa trên hồ sơ người dùng, tin nhắn và ngữ cảnh
       let pitch = templates[pitchType];
       let products = [];
 
@@ -370,27 +427,32 @@ class ChatbotService {
         case 'urgency':
           products = bestDeals.slice(0, 3);
           pitch = pitch.replace('{discount}', products[0]?.discount || '50%');
+
           break;
 
         case 'personal':
           products = await this.getPersonalizedRecommendations(
             userProfile?.id,
-            { limit: 3 }
+            { limit: 3 },
           );
           pitch = pitch.replace('{name}', userProfile?.name || 'bạn');
+
           break;
 
         case 'social_proof':
           products = trendingProducts.slice(0, 3);
+
           break;
 
         case 'value':
           products = bestDeals.slice(0, 3);
           const totalSavings = products.reduce(
             (sum, p) => sum + (p.compareAtPrice - p.price),
-            0
+            0,
           );
+
           pitch = pitch.replace('{savings}', this.formatPrice(totalSavings));
+
           break;
 
         default:
@@ -406,7 +468,8 @@ class ChatbotService {
         type: pitchType,
       };
     } catch (error) {
-      console.error('Error generating sales pitch:', error);
+      console.error('Lỗi khi tạo sales pitch:', error);
+
       return {
         text: '🌟 Chúng tôi có nhiều sản phẩm tuyệt vời đang được khuyến mãi! Bạn có muốn xem không?',
         products: bestDeals.slice(0, 3),
@@ -416,12 +479,13 @@ class ChatbotService {
   }
 
   /**
-   * Find sales opportunity in general conversation
+   * Tìm cơ hội bán hàng trong cuộc trò chuyện chung chung
+   * Hàm này đang trong quá trình thử nghiệm
    */
   async findSalesOpportunity(message, userProfile) {
     const lowerMessage = message.toLowerCase();
 
-    // Keywords that indicate potential sales opportunity
+    // Tìm từ khóa chỉ ra cơ hội bán hàng tiềm năng
     const salesKeywords = [
       'chán',
       'buồn',
@@ -441,10 +505,9 @@ class ChatbotService {
       'interview',
     ];
 
-    const opportunity = salesKeywords.find((keyword) =>
-      lowerMessage.includes(keyword)
-    );
+    const opportunity = this.matchesPatterns(lowerMessage, salesKeywords);
 
+    // Nếu tìm thấy cơ hội, trả về ý định bán hàng với độ tin cậy trung bình
     if (opportunity) {
       return {
         found: true,
@@ -460,44 +523,28 @@ class ChatbotService {
   }
 
   /**
-   * Track conversation for analytics
+   * Theo dõi cuộc trò chuyện để phân tích
+   * Hàm này đang trong quá trình thử nghiệm
    */
   async trackConversation(data) {
     try {
-      // In a real implementation, this would save to a conversation tracking table
-      console.log('Tracking conversation:', {
+      // Trong triển khai thực tế, những dữ liệu này sẽ được lưu vào bảng theo dõi cuộc trò chuyện
+      console.log('Dữ liệu cuộc trò chuyện:', {
         userId: data.userId,
         message: data.message,
         intent: data.intent,
         products: data.products?.length || 0,
         timestamp: data.timestamp,
       });
-
-      // You could save this to a ChatbotConversation model
     } catch (error) {
-      console.error('Error tracking conversation:', error);
+      console.error('Lỗi khi theo dõi cuộc trò chuyện:', error);
     }
   }
 
   /**
-   * Track analytics events
+   * Mẫu bài thuyết phục bán hàng
+   * Hàm này đang trong quá trình thử nghiệm
    */
-  async trackAnalytics(data) {
-    try {
-      // In a real implementation, this would save to an analytics table
-      console.log('Tracking analytics:', data);
-
-      // You could save this to a ChatbotAnalytics model
-    } catch (error) {
-      console.error('Error tracking analytics:', error);
-    }
-  }
-
-  // Helper methods
-  matchesPatterns(text, patterns) {
-    return patterns.some((pattern) => text.includes(pattern));
-  }
-
   getSalesPitchTemplates() {
     return {
       urgency:
@@ -515,26 +562,44 @@ class ChatbotService {
     };
   }
 
+  /**
+   * Chọn loại bài thuyết phục bán hàng dựa trên hồ sơ người dùng và ngữ cảnh
+   * Hàm này đang trong quá trình thử nghiệm
+   */
   selectPitchType(userProfile, message, context) {
     const lowerMessage = message.toLowerCase();
 
+    // Nếu người dùng là VIP, ưu tiên bài thuyết phục cá nhân
     if (userProfile?.isVip) return 'personal';
-    if (lowerMessage.includes('giá') || lowerMessage.includes('rẻ'))
-      return 'value';
-    if (lowerMessage.includes('hot') || lowerMessage.includes('trend'))
+
+    // Nếu người dùng quan tâm đến giá cả, ưu tiên bài thuyết phục về giá trị
+    if (this.matchesPatterns(lowerMessage, ['giá', 'rẻ'])) return 'value';
+
+    // Nếu người dùng đề cập đến xu hướng hoặc sản phẩm hot, ưu tiên bài thuyết phục về bằng chứng xã hội
+    if (this.matchesPatterns(lowerMessage, ['hot', 'trend']))
       return 'social_proof';
+
+    // Nếu ngữ cảnh là buổi tối hoặc cuối tuần, ưu tiên bài thuyết phục về sự khẩn cấp
     if (context.timeOfDay === 'evening') return 'urgency';
 
-    // Random selection for variety
+    // Nếu không có điều kiện đặc biệt, chọn ngẫu nhiên một loại bài thuyết phục
     const types = ['urgency', 'social_proof', 'value', 'scarcity'];
     return types[Math.floor(Math.random() * types.length)];
   }
 
+  /**
+   * Định dạng giá tiền theo định dạng Việt Nam
+   */
   formatPrice(price) {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
     }).format(price);
+  }
+
+  // Helper methods
+  matchesPatterns(text, patterns) {
+    return patterns.some((pattern) => text.includes(pattern));
   }
 }
 
