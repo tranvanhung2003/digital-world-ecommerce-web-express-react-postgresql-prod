@@ -36,7 +36,7 @@ export default defineConfig({
     port: 5175, // Sử dụng cổng 5175 mặc định
     strictPort: false, // Cho phép tìm cổng khác nếu 5175 đã được sử dụng
     proxy: {
-      // Proxy API requests to avoid CORS issues
+      // Proxy tất các API request để tránh các vấn đề CORS
       '/api': {
         target: 'http://localhost:8888',
         changeOrigin: true,
@@ -53,14 +53,13 @@ export default defineConfig({
             console.log(
               'Received Response from the Target:',
               proxyRes.statusCode,
-              req.url
+              req.url,
             );
           });
         },
       },
     },
     fs: {
-      // Allow serving files from one level up to the project root
       allow: ['..'],
     },
   },
