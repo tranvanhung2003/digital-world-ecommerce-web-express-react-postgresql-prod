@@ -26,7 +26,7 @@ interface FilterPanelProps {
   onFilterChange: (
     groupId: string,
     optionId: string,
-    isSelected: boolean
+    isSelected: boolean,
   ) => void;
   onClearFilters: () => void;
   isMobile?: boolean;
@@ -46,12 +46,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   const [localPriceRange, setLocalPriceRange] =
     useState<PriceRange>(priceRange);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
-    filterGroups.reduce((acc, group) => ({ ...acc, [group.id]: true }), {})
+    filterGroups.reduce((acc, group) => ({ ...acc, [group.id]: true }), {}),
   );
 
   const handlePriceInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: 'min' | 'max'
+    type: 'min' | 'max',
   ) => {
     const value = parseInt(e.target.value) || 0;
     setLocalPriceRange((prev) => ({ ...prev, [type]: value }));
@@ -141,7 +141,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           <div className="flex space-x-3 mb-3">
             <div className="w-1/2">
               <label className="text-sm text-neutral-500 dark:text-neutral-400 mb-1 block">
-                Tối thiểu (VND)
+                Tối thiểu
               </label>
               <input
                 type="number"
@@ -154,7 +154,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             </div>
             <div className="w-1/2">
               <label className="text-sm text-neutral-500 dark:text-neutral-400 mb-1 block">
-                Tối đa (VND)
+                Tối đa
               </label>
               <input
                 type="number"
