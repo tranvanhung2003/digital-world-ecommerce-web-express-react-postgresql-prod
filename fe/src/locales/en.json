@@ -235,7 +235,7 @@
       "contactSupport": "Contact support"
     },
     "responses": {
-      "productSearch": "I found some products matching \"{{query}}\". You might be interested in:\n\n1. Unisex cotton t-shirt - $12.99\n2. Slim fit jeans - $24.99\n3. Sports sneakers - $34.99\n\nWhich product would you like to see details for?",
+      "productSearch": "I found some products matching \"{{query}}\". You might be interested in:\n\n1. Lenovo ThinkPad P16 Gen 1\n2. Lenovo ThinkPad T14 Gen 3\n3. Lenovo ThinkPad X1 Carbon Gen 10\n\nWhich product would you like to see details for?",
       "orderHelp": "To place an order on our website, you can follow these steps:\n\n1. Choose the product you want to buy\n2. Add to cart\n3. Proceed to checkout\n4. Fill in shipping information\n5. Choose payment method\n6. Confirm order\n\nWhich step do you need more help with?",
       "returnPolicy": "Our return policy:\n\n- Return period: within 7 days of receiving the item\n- Product must have original tags and be unused\n- Must have purchase receipt\n- Return shipping costs are paid by customer\n\nDo you need more information about our return policy?",
       "general": "Thank you for contacting us. I'm an AI shopping assistant, I can help you with:\n\n- Product search\n- Order guidance\n- Return policy information\n- Answering frequently asked questions\n\nWhat can I help you with?"
@@ -359,7 +359,7 @@
     },
     "creditCard": {
       "cardNumber": "Card Number",
-      "cardNumberPlaceholder": "1234 5678 9012 3456",
+      "cardNumberPlaceholder": "4242 4242 4242 4242",
       "nameOnCard": "Name on Card",
       "expiryDate": "Expiry Date",
       "expiryPlaceholder": "MM/YY",
@@ -400,8 +400,8 @@
       "step3": "You will receive email confirmation when order is approved",
       "routingNumber": "Routing Number",
       "referenceNote": "Your order number will be provided after checkout",
-      "exampleBank": "Example Bank",
-      "exampleStoreName": "Your Store Name"
+      "exampleBank": "MBBank",
+      "exampleStoreName": "Digital World"
     },
     "orderSummary": {
       "title": "Order Summary",
