@@ -30,6 +30,10 @@
     "fe/src/components/features/README.md": true,
     ".vscode": true,
     "fe/src/pages/CheckoutPage.tsx.bak": true,
-    "fe/src/pages/admin/EditProductPage.tsx.backup": true
+    "fe/src/pages/admin/EditProductPage.tsx.backup": true,
+    "be/src/controllers/attributeController.js": true,
+    "be/src/controllers/imageController.js": true,
+    "be/src/controllers/upload.controller.js": true,
+    "be/src/controllers/wishlist.controller.js": true
   }
 }
