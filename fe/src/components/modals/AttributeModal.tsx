@@ -52,7 +52,7 @@ const AttributeModal: React.FC<AttributeModalProps> = ({
 
     // Lưu vào localStorage để debug
     const savedAttributes = JSON.parse(
-      localStorage.getItem('debug_attributes') || '[]'
+      localStorage.getItem('debug_attributes') || '[]',
     );
     savedAttributes.push(attributeData);
     localStorage.setItem('debug_attributes', JSON.stringify(savedAttributes));
@@ -109,55 +109,6 @@ const AttributeModal: React.FC<AttributeModalProps> = ({
         </Form.Item>
 
         <Divider />
-
-        {/* Hướng dẫn */}
-        <Alert
-          message="💡 Gợi ý tạo thuộc tính"
-          description={
-            <ul style={{ marginBottom: 0, paddingLeft: 20 }}>
-              <li>
-                <strong>Tên thuộc tính:</strong> Nên rõ ràng, dễ hiểu (VD: "Màu
-                sắc", "Kích thước")
-              </li>
-              <li>
-                <strong>Giá trị:</strong> Liệt kê tất cả các tùy chọn có thể có
-              </li>
-              <li>
-                <strong>Cách nhau bởi dấu phẩy:</strong> "Đỏ, Xanh, Đen" hoặc
-                "S, M, L, XL"
-              </li>
-              <li>Thuộc tính này sẽ được sử dụng khi tạo biến thể sản phẩm</li>
-            </ul>
-          }
-          type="info"
-          showIcon
-          icon={<InfoCircleOutlined />}
-          style={{ marginBottom: 16 }}
-        />
-
-        {/* Ví dụ minh họa */}
-        <Alert
-          message="📖 Ví dụ minh họa"
-          description={
-            <div style={{ marginBottom: 0 }}>
-              <div>
-                <strong>Tên:</strong> "Màu sắc" → <strong>Giá trị:</strong> "Đỏ,
-                Xanh dương, Đen, Trắng"
-              </div>
-              <div>
-                <strong>Tên:</strong> "Kích thước" → <strong>Giá trị:</strong>{' '}
-                "S, M, L, XL, XXL"
-              </div>
-              <div>
-                <strong>Tên:</strong> "Chất liệu" → <strong>Giá trị:</strong>{' '}
-                "Cotton, Polyester, Linen"
-              </div>
-            </div>
-          }
-          type="success"
-          showIcon
-          style={{ marginBottom: 16 }}
-        />
 
         {/* Submit buttons */}
         <div style={{ textAlign: 'right' }}>
