@@ -38,7 +38,7 @@ const AdminLayout: React.FC = () => {
     {
       key: 'dashboard',
       path: '/admin/dashboard',
-      label: 'Dashboard',
+      label: 'Bảng điều khiển',
       icon: (
         <svg
           className="w-5 h-5"
@@ -58,7 +58,7 @@ const AdminLayout: React.FC = () => {
     {
       key: 'products',
       path: '/admin/products',
-      label: 'Products',
+      label: 'Sản phẩm',
       icon: (
         <svg
           className="w-5 h-5"
@@ -98,7 +98,7 @@ const AdminLayout: React.FC = () => {
     {
       key: 'categories',
       path: '/admin/categories',
-      label: 'Categories',
+      label: 'Danh mục',
       icon: (
         <svg
           className="w-5 h-5"
@@ -118,7 +118,7 @@ const AdminLayout: React.FC = () => {
     {
       key: 'orders',
       path: '/admin/orders',
-      label: 'Orders',
+      label: 'Đơn hàng',
       icon: (
         <svg
           className="w-5 h-5"
@@ -138,7 +138,7 @@ const AdminLayout: React.FC = () => {
     {
       key: 'users',
       path: '/admin/users',
-      label: 'Users',
+      label: 'Người dùng',
       icon: (
         <svg
           className="w-5 h-5"
@@ -158,7 +158,7 @@ const AdminLayout: React.FC = () => {
     {
       key: 'warranty-packages',
       path: '/admin/warranty-packages',
-      label: 'Warranty Packages',
+      label: 'Gói bảo hành',
       icon: (
         <svg
           className="w-5 h-5"

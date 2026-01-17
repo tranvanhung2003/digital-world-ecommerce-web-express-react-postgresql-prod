@@ -22,12 +22,10 @@ import ProductCard from '@/components/features/ProductCard';
 import { PremiumButton } from '@/components/common';
 
 /**
- * HomePage component - Main landing page with hero, featured products, and categories
  */
 const HomePage: React.FC = () => {
   const { t } = useTranslation();
 
-  // API queries with enhanced state management
   const featuredProductsQuery = useGetFeaturedProductsQuery({ limit: 4 });
   const categoriesQuery = useGetCategoriesQuery();
 
@@ -47,7 +45,6 @@ const HomePage: React.FC = () => {
     isArray: true,
   });
 
-  // Newsletter subscription
   const [newsletterEmail, setNewsletterEmail] = React.useState('');
   const [subscribeNewsletter, { isLoading: isSubscribing }] =
     useSubscribeNewsletterMutation();
@@ -74,7 +71,6 @@ const HomePage: React.FC = () => {
     }
   };
 
-  // Transform categories for display
   const displayCategories =
     categories.data?.slice(0, 6).map((category: any) => ({
       id: category.id,
